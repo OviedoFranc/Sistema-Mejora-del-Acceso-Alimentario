@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence
+    http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+             version="2.0">
+
+    <persistence-unit name="viandasDB" transaction-type="RESOURCE_LOCAL">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <class> ar.edu.utn.dds.k3003.model.Vianda</class>
+
+        <properties>
+            <property name="javax.persistence.jdbc.user" value="viandasdb_user"/> <!--viandas_189n_user-->
+            <property name="javax.persistence.jdbc.password" value="UNK4HpPGJfXrBubBAxtZ69AgUcuHWif0" /> <!--GQRGvr5FyUb9WXk2THJ9TiSInWOmUlHK-->
+            <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver"/>
+            <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://viandasdb_user:UNK4HpPGJfXrBubBAxtZ69AgUcuHWif0@dpg-ct3q8s5umphs73e0oflg-a.oregon-postgres.render.com/viandas_2fgd"/> <!--//dpg-cplra2ij1k6c739pkip0-a.oregon-postgres.render.com/viandas_189n-->
+
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
+            <property name="hibernate.default_schema" value="public"/>
+            <property name="hibernate.archive.autodetection" value="class" />
+            <property name="hibernate.format_sql" value="true" />
+            <property name="hibernate.flushMode" value="FLUSH_AUTO" />
+            <property name="hibernate.hbm2ddl.auto" value="update" />
+            <property name="hibernate.show_sql" value="true" />
+            <property name="hibernate.use_sql_comments" value="true" />
+            <property name="hibernate.connection.pool_size" value="100" />
+        </properties>
+
+    </persistence-unit>
+
+</persistence>
