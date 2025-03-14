@@ -1,0 +1,76 @@
+version: '1.0'
+
+services:
+  colaboradores:
+    build: ./colaboradores
+    container_name: proyecto1
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./colaboradores:/app
+    networks:
+      - internal_network
+
+  heladeras:
+    build: ./heladeras
+    container_name: heladeras
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./heladeras:/app
+    networks:
+      - internal_network
+
+  logistica:
+    build: ./logistica
+    container_name: logistica
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./logistica:/app
+    networks:
+      - internal_network
+
+  viandas:
+    build: ./viandas
+    container_name: viandas
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./viandas:/app
+    networks:
+      - internal_network
+
+  metrics:
+    build: ./metrics
+    container_name: metrics
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./metrics:/app
+    networks:
+      - internal_network
+
+  telegram:
+    build: ./telegram
+    container_name: telegram
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./telegram:/app
+    networks:
+      - internal_network
+
+  sensor:
+    build: ./sensor
+    container_name: sensor
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./telegram:/app
+    networks:
+      - internal_network
+
+networks:
+  internal_network:
+    driver: bridge

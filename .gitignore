@@ -1,0 +1,8 @@
+**/.idea/
+**/.env
+**/target
+node_modules/
+vendor/
+*.log
+*.tmp
+.DS_Store
