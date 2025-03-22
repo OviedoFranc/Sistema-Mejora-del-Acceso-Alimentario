@@ -10,7 +10,7 @@ import javax.persistence.Table;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "incidente")
+@Table(name = "retiro")
 public class RetiroDTODay {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

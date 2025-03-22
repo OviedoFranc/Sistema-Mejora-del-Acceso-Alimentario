@@ -11,5 +11,4 @@ public class RutaMapper {
         rutaDTO.setId(ruta.getId());
         return rutaDTO;
     }
-    //
 }

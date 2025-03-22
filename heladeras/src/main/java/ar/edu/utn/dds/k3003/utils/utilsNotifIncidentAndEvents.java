@@ -3,8 +3,6 @@ package ar.edu.utn.dds.k3003.utils;
 import ar.edu.utn.dds.k3003.model.DTO.SuscripcionDTO;
 import ar.edu.utn.dds.k3003.model.Incidente;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.cdimascio.dotenv.Dotenv;
-
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -46,8 +44,8 @@ public class utilsNotifIncidentAndEvents {
      * Notifica a los colaboradores informandoles que quedan igual o menos cantidad de lo que setearon, o que ocurrio una falla en la heladera
      * **/
     public static void notificarAColaboradorDeSuSuscripcion(SuscripcionDTO suscripcion) {
-        Dotenv dotenv = Dotenv.load();
-        String url = dotenv.get("URL_NOTIFICACIONES_COLABORADOR");
+
+        String url = System.getenv("URL_COLABORADOR"+"/colaboradores/avisar");
 
         HttpClient client = HttpClient.newHttpClient();
         ObjectMapper objectMapper = new ObjectMapper(); // Para convertir el DTO a JSON

@@ -1,11 +1,9 @@
 package ar.edu.utn.dds.k3003.Utils;
-import io.github.cdimascio.dotenv.Dotenv;
+
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
-
-import ar.edu.utn.dds.k3003.app.BotApp.ChatIdRegistry;
-
+import ar.edu.utn.dds.k3003.app.WebApp.ChatIdRegistry;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -244,12 +242,12 @@ public class Comandos extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return Dotenv.load().get("Nombre_Bot");
+        return System.getenv().get("Nombre_Bot");
     }
 
     @Override
     public String getBotToken() {
-        return Dotenv.load().get("BOT_TOKEN");
+        return System.getenv().get("BOT_TOKEN");
     }
 }
 

@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import io.github.cdimascio.dotenv.Dotenv;
 import io.javalin.Javalin;
 import io.javalin.micrometer.MicrometerPlugin;
 
@@ -19,8 +18,7 @@ public class WebApp {
 
     public static void main(String[] args) {
 
-        Dotenv dotenv = Dotenv.load();
-        var port = Integer.parseInt(dotenv.get("PORT"));
+        var port = Integer.parseInt(System.getenv("PORTMETRICS"));
 
         final var metricsUtils = new DDMetricsUtils("transferencias");
         final var registry = metricsUtils.getRegistry();

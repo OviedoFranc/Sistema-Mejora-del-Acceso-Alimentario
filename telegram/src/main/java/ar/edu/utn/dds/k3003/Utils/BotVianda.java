@@ -1,13 +1,9 @@
 package ar.edu.utn.dds.k3003.Utils;
 
-import ar.edu.utn.dds.k3003.app.BotApp;
-import io.github.cdimascio.dotenv.Dotenv;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -18,9 +14,8 @@ import java.util.List;
 
 public class BotVianda {
 
-    Dotenv dotenv = Dotenv.load();
-    String urlViandas = /*"https://viandas-prueba.onrender.com" */dotenv.get("URL_VIANDA");
-    
+    String urlViandas= System.getenv("URL_VIANDA");
+
     public void crearYDepositarVianda(Long chatId, String mensaje, Comandos comandos) {
     	String[] partes = mensaje.split("\\s+");
     	

@@ -1,11 +1,7 @@
 package ar.edu.utn.dds.k3003.app;
 
-import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
-
 import ar.edu.utn.dds.k3003.clients.FachadaHeladera;
 import ar.edu.utn.dds.k3003.facades.FachadaLogistica;
 import ar.edu.utn.dds.k3003.facades.FachadaViandas;
@@ -14,34 +10,21 @@ import ar.edu.utn.dds.k3003.model.exceptions.ErrorConParametrosException;
 import ar.edu.utn.dds.k3003.repositories.ColaboradorMapper;
 import ar.edu.utn.dds.k3003.repositories.ColaboradorRepository;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-
-import static ar.edu.utn.dds.k3003.model.TipoSuscripcion.ViandasDisponibles;
-
 
 @Slf4j
-public class Fachada  { //ya no implementa la FachadaColaboradores del profe xq esta en read-only
+public class Fachada  {
 
     public final ColaboradorRepository colaboradorRepository;
     private final ColaboradorMapper colaboradorMapper;
     private FachadaLogistica logisticaFachada;
     private FachadaViandas viandasFachada;
-
     private FachadaHeladera heladerasFachada;
-    final LocalDateTime now = LocalDateTime.now();
-    public static EntityManagerFactory entityManagerFactory;
 
-
-    public  Fachada() {     //pónerle void?
-        startEntityManagerFactory();
-        EntityManager entityManager= entityManagerFactory.createEntityManager();
-        this.colaboradorRepository =new ColaboradorRepository(entityManagerFactory);
+    public Fachada(EntityManagerFactory entityFactory) {
+        this.colaboradorRepository =new ColaboradorRepository(entityFactory);
         this.colaboradorMapper=new ColaboradorMapper();
     }
-
 
     public ColaboradorDTO agregar(ColaboradorDTO colaboradorDTO) {
 
@@ -52,23 +35,12 @@ public class Fachada  { //ya no implementa la FachadaColaboradores del profe xq 
     }
 
     public void suscribirse(SuscripcionDTO2 suscripcion) {
-
-    //    SuscripcionDTO2 s2 = new SuscripcionDTO2(suscripcion.getId(), suscripcion.getHeladeraId(), suscripcion.getTipoSuscripcion().get(0), suscripcion.getCantidadDisponible());
-   //     for(int i=0;i<suscripcion.getTipoSuscripcion().size();i++)
-    //    {
-    //        if(suscripcion.getTipoSuscripcion().get(i) == ViandasDisponibles)
-   //             s2.setCantidadN(suscripcion.getCantidadDisponible());
-    //        else
-  //              s2.setCantidadN(suscripcion.getCantidadFaltante());
-
             this.heladerasFachada.postSubscripcion(suscripcion.getHeladeraId(),suscripcion);
-   //     }
-        //  this.colaboradorRepository.suscribirse(suscripcion);
     }
 
     public void actualizarPesosPuntos(Double pesosDonados,Double viandas_Distribuidas, Double viandasDonadas,
                                       Double tarjetasRepartidas, Double heladerasActivas,Double heladerasReparadas) throws ErrorConParametrosException {
-    this.colaboradorRepository.actualizarPesosPuntos(new PesosPuntos(pesosDonados,viandas_Distribuidas,viandasDonadas,tarjetasRepartidas,heladerasActivas,heladerasReparadas));
+        this.colaboradorRepository.actualizarPesosPuntos(new PesosPuntos(pesosDonados,viandas_Distribuidas,viandasDonadas,tarjetasRepartidas,heladerasActivas,heladerasReparadas));
     }
 
 
@@ -76,18 +48,17 @@ public class Fachada  { //ya no implementa la FachadaColaboradores del profe xq 
         Double puntos = 0.0;
         Colaborador colaborador = colaboradorRepository.findById(colaboradorId);
 
-            Double pesoPesosDonados=colaboradorRepository.getPesosDonados();
-            puntos+=pesoPesosDonados*colaborador.getPesosDonados();
+        Double pesoPesosDonados=colaboradorRepository.getPesosDonados();
+        puntos+=pesoPesosDonados*colaborador.getPesosDonados();
 
-            Double pesoHeladerasReparadas=colaboradorRepository.getHeladerasActivas();
-            puntos+=pesoHeladerasReparadas*colaborador.getHeladerasReparadas();
+        Double pesoHeladerasReparadas=colaboradorRepository.getHeladerasActivas();
+        puntos+=pesoHeladerasReparadas*colaborador.getHeladerasReparadas();
 
-            Double pesoViandasDon=colaboradorRepository.getViandasDonadas();
-            puntos+= pesoViandasDon * this.viandasFachada.viandasDeColaborador(colaboradorId, 5, 2024).size();
+        Double pesoViandasDon=colaboradorRepository.getViandasDonadas();
+        puntos+= pesoViandasDon * this.viandasFachada.viandasDeColaborador(colaboradorId, 5, 2024).size();
 
-            Double pesoViandasDist=colaboradorRepository.getViandas_Distribuidas();
-            puntos+= pesoViandasDist * this.logisticaFachada.trasladosDeColaborador(colaboradorId, 5 , 2024).size();
-
+        Double pesoViandasDist=colaboradorRepository.getViandas_Distribuidas();
+        puntos+= pesoViandasDist * this.logisticaFachada.trasladosDeColaborador(colaboradorId, 5 , 2024).size();
         return puntos;
     }
 
@@ -152,21 +123,5 @@ public class Fachada  { //ya no implementa la FachadaColaboradores del profe xq 
     public void borrarDB() {
         colaboradorRepository.borrarRepository();
     }
-    public static void startEntityManagerFactory() {
-// https://stackoverflow.com/questions/8836834/read-environment-variables-in-persistence-xml-file
-        Map<String, String> env = System.getenv();
-        Map<String, Object> configOverrides = new HashMap<String, Object>();
-        String[] keys = new String[] { "javax.persistence.jdbc.url", "javax.persistence.jdbc.user",
-                "javax.persistence.jdbc.password", "javax.persistence.jdbc.driver", "hibernate.hbm2ddl.auto",
-                "hibernate.connection.pool_size", "hibernate.show_sql" };
-        for (String key : keys) {
-            if (env.containsKey(key)) {
-                String value = env.get(key);
-                configOverrides.put(key, value);
-            }
-        }
-        entityManagerFactory = Persistence.createEntityManagerFactory("db", configOverrides);
-    }
-
 }
 

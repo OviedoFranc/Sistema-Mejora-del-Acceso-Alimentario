@@ -4,12 +4,9 @@ package ar.edu.utn.dds.k3003.Utils;
 import ar.edu.utn.dds.k3003.model.IncidenteDTO;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import ar.edu.utn.dds.k3003.model.RetiroDTODay;
-import io.github.cdimascio.dotenv.Dotenv;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
-
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,8 +26,7 @@ import java.util.List;
 
 public class BotHeladera {
 
-  Dotenv dotenv = Dotenv.load();
-  String url = /*"https://heladeras-prueba.onrender.com"*/ dotenv.get("URL_HELADERA");
+    String url = System.getenv("URL_HELADERA");
 
   public void verIncidentesDeHeladera(Long chatId, String mensaje, Comandos comandos){
 	  String[] partes = mensaje.split("\\s+");

@@ -40,7 +40,10 @@ public class Heladera {
     //Campos para FALLO DE DESCONEXION
     private Integer tiempoMaximoUltimoReciboTemperatura;
     private LocalDateTime tiempoUltimaTemperaturaRecibida;
-    @ElementCollection(fetch = FetchType.EAGER)
+
+    @ElementCollection
+    @CollectionTable(name = "traslado_viandas", joinColumns = @JoinColumn(name = "traslado_id"))
+    @Column(name = "qr_vianda")
     private List<String> viandas = new ArrayList<>();
     @ElementCollection
     @CollectionTable(name = "colaboradorIDsuscripcionNViandasDisponibles")
@@ -191,28 +194,13 @@ public class Heladera {
 
         return tiempoRestante;
     }
+
     private long calcularMinutos(LocalDateTime desde, LocalDateTime hasta) {
         return java.time.Duration.between(desde, hasta).toMinutes();
     }
 
-    public List<Long> getColaboradorIDsuscripcionNViandasDisponiblesFiltrado() {
-        Integer cantidadDeViandasActual = this.cantidadDeViandas();
-         return this.colaboradorIDsuscripcionNViandasDisponibles.entrySet().stream()
-            .filter(entry -> entry.getValue() <= cantidadDeViandasActual)
-            .map(Map.Entry::getKey)// Filtro los colaboradores que quieren saber si hay menos de nViandasDisponibles para retirar
-            .collect(Collectors.toList()); // Creo un nuevo List
-    }
-
     public void setColaboradorIDsuscripcionNViandasDisponibles(Long colaboradorId, Integer nViandasDisponibles) {
         this.colaboradorIDsuscripcionNViandasDisponibles.put(colaboradorId, nViandasDisponibles);
-    }
-
-    public List<Long> getColaboradorIDsuscripcionCantidadFaltantesViandasByNumber() {
-        int cantidadFaltanteHastaLlenarse = this.cantidadDeViandasQueQuedanHastaLlenar();
-        return colaboradorIDsuscripcionCantidadFaltantesViandas.entrySet().stream()
-                .filter(entry -> entry.getValue() <= cantidadFaltanteHastaLlenarse) // Filtra si la cantidad faltante  de viandas hasta llenarse es menor
-                .map(Map.Entry::getKey) // Extrae solo los IDs de los colaboradores
-                .collect(Collectors.toList()); // Recoge en una lista
     }
 
     public void setColaboradorIDsuscripcionCantidadFaltantesViandas(Long colaboradorId, Integer nViandasDisponibles) {

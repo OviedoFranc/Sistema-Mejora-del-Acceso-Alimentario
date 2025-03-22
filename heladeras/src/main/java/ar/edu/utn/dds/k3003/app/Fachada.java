@@ -24,6 +24,10 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras {
     public Fachada() {
     }
 
+    public Fachada(EntityManagerFactory entityManagerFactory) {
+        this.entityManagerFactory = entityManagerFactory;
+    }
+
     public void avisoDeFaltantesPorRetirar(Heladera heladera){
         System.out.printf("Aviso de faltantes por retirar - Heladera ID: %d\n", heladera.getHeladeraId());
         heladera.getColaboradorIDsuscripcionNViandasDisponibles().forEach((colaboradorId, cantidadN) -> {
@@ -57,9 +61,6 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras {
     public Boolean heladeraHabilitada(Integer heladeraID){
         Heladera heladera = obtenerHeladera(heladeraID);
         return heladera.estaActiva();
-    }
-    public Fachada(EntityManagerFactory entityManagerFactory) {
-        this.entityManagerFactory = entityManagerFactory;
     }
 
     public Heladera obtenerHeladera(Integer heladeraID) {
@@ -191,7 +192,6 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras {
         }
     }
 
-    //TODO: REVISAR ESTA FUNCION ME HACE RUIDO
     public List<SuscripcionDTO> obtenerSuscripciones(Integer heladeraID){
         EntityManager entityManager = entityManagerFactory.createEntityManager();
         entityManager.getTransaction().begin();

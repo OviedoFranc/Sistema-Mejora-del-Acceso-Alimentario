@@ -9,7 +9,6 @@ import ar.edu.utn.dds.k3003.facades.dtos.ColaboradorDTO;
 import ar.edu.utn.dds.k3003.facades.dtos.FormaDeColaborarEnum;
 import ar.edu.utn.dds.k3003.facades.dtos.ViandaDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.cdimascio.dotenv.Dotenv;
 import io.javalin.http.HttpStatus;
 import retrofit2.Response;
 import retrofit2.Retrofit;
@@ -26,8 +25,7 @@ public class ColaboradorProxy implements FachadaColaboradoresModificada {
     private FachadaColaboradores fachadaColaboradores;
     public ColaboradorProxy(ObjectMapper objectMapper) {
 
-        Dotenv dotenv = Dotenv.load();
-        this.endpoint = dotenv.get("URL_COLABORADORES");
+        this.endpoint = System.getenv("URL_COLABORADOR");
 
         var retrofit =
                 new Retrofit.Builder()

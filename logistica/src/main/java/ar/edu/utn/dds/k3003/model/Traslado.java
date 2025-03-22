@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,9 +20,9 @@ public class Traslado {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ElementCollection
-    @CollectionTable(name = "traslado_viandas", joinColumns = @JoinColumn(name = "traslado_id"))
+    @CollectionTable(name = "traslado_viandas", joinColumns = @JoinColumn(name = "traslado_id",columnDefinition = "BIGINT"))
     @Column(name = "qr_vianda")
-    private List<String> listaQrVianda; //porque ahora puede llevar varias viandas
+    private List<String> listaQrVianda;
     @Enumerated(EnumType.STRING)
     @Column(name = "estado")
     private EstadoTrasladoEnum estado;

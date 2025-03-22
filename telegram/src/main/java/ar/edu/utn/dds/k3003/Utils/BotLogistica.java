@@ -1,14 +1,10 @@
 package ar.edu.utn.dds.k3003.Utils;
 
-import ar.edu.utn.dds.k3003.app.BotApp;
-import ar.edu.utn.dds.k3003.app.BotApp.ChatIdRegistry;
-import io.github.cdimascio.dotenv.Dotenv;
+import ar.edu.utn.dds.k3003.app.WebApp.ChatIdRegistry;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -20,8 +16,7 @@ import org.json.JSONObject;
 
 public class BotLogistica {
 
-    Dotenv dotenv = Dotenv.load();
-    String urlLogistica = /*"https://logistica-prueba.onrender.com"*/ dotenv.get("URL_LOGISTICA");
+    String urlLogistica = System.getenv("URL_LOGISTICA");
 
     public void darDeAltaRuta(Long chatId, String mensaje, Comandos comandos) {
 

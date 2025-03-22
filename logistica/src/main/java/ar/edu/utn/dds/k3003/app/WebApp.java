@@ -7,29 +7,31 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import io.github.cdimascio.dotenv.Dotenv;
 import io.javalin.Javalin;
 
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
 
 public class WebApp {
+
+    private static EntityManagerFactory entityManagerFactory;
+
     public static void main(String[] args) {
 
-        Dotenv dotenv = Dotenv.load();
-        var URL_VIANDAS = dotenv.get("URL_VIANDAS");
-        var URL_HELADERAS = dotenv.get("URL_HELADERAS");
-        var URL_COLABORADORES = dotenv.get("URL_COLABORADORES");
-
         var objectMapper = createObjectMapper();
-        var fachada = new Fachada();
+        startEntityManagerFactory();
+        var fachada = new Fachada(entityManagerFactory);
 
         fachada.setViandasProxy(new ar.edu.utn.dds.k3003.clients.ViandasProxy(objectMapper));
         fachada.setHeladerasProxy(new ar.edu.utn.dds.k3003.clients.HeladerasProxy(objectMapper));
         fachada.setColaboradoresProxy(new ar.edu.utn.dds.k3003.clients.ColaboradorProxy(objectMapper));
 
-        var port = Integer.parseInt(dotenv.get("PORT"));
+        var port = Integer.parseInt(System.getenv("PORTLOGISTICA"));
 
         var app = Javalin.create().start(port);
 
@@ -60,5 +62,22 @@ public class WebApp {
         var sdf = new SimpleDateFormat(Constants.DEFAULT_SERIALIZATION_FORMAT, Locale.getDefault());
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         objectMapper.setDateFormat(sdf);
+    }
+
+    public static void startEntityManagerFactory() {
+        Map<String, Object> configOverrides = new HashMap<>();
+        configOverrides.put("javax.persistence.jdbc.url", System.getenv("jdbcUrl"));
+        configOverrides.put("javax.persistence.jdbc.user", System.getenv("jdbcUser"));
+        configOverrides.put("javax.persistence.jdbc.password", System.getenv("jdbcPassword"));
+        configOverrides.put("javax.persistence.jdbc.driver", System.getenv("jdbcDriver"));
+        configOverrides.put("hibernate.hbm2ddl.auto", System.getenv("hibernateDDL"));
+        configOverrides.put("hibernate.connection.pool_size", System.getenv("hibernatePoolSize"));
+        configOverrides.put("hibernate.dialect", System.getenv("hibernateDialect"));
+        configOverrides.put("hibernate.connection.release_mode", System.getenv("hibernateConnectionMode"));
+        configOverrides.put("hibernate.archive.autodetection", System.getenv("hibernateArchiveDetection"));
+        configOverrides.put("hibernate.default_schema", System.getenv("hibernateSchema"));
+        configOverrides.put("hibernate.format_sql", System.getenv("hibernateFormatSql"));
+
+        entityManagerFactory = Persistence.createEntityManagerFactory("db", configOverrides);
     }
 }

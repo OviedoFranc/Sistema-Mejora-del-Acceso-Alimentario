@@ -12,19 +12,6 @@
 
 
         <properties>
-            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
-            <property name="javax.persistence.jdbc.driver" value="org.postgresql.Driver"/>
-            <property name="javax.persistence.jdbc.url" value="jdbc:postgresql://ct4f8nqj1k6c73egctgg-a.oregon-postgres.render.com:5432/copiamedb_nm99"/>
-            <property name="javax.persistence.jdbc.user" value="copiamedb_nm99_user"/>
-            <property name="javax.persistence.jdbc.password" value="QgJsk8q90yb8P6m6FUpu6pVFtEFiz0xT" />
-
-            <property name="hibernate.default_schema" value="public"/>
-            <property name="hibernate.hbm2ddl.auto" value="update"/>
-            <property name="hibernate.connection.pool_size" value="10" />
-            <property name="hibernate.archive.autodetection" value="class" />
-            <property name="hibernate.show_sql" value="true" />
-            <property name="hibernate.format_sql" value="true" />
-            <property name="use_sql_comments" value="true" />
         </properties>
 
     </persistence-unit>

@@ -1,11 +1,8 @@
 package ar.edu.utn.dds.k3003.app;
 
 import ar.edu.utn.dds.k3003.Utils.Comandos;
-import io.github.cdimascio.dotenv.Dotenv;
-
 import java.util.HashMap;
 import java.util.Map;
-
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -13,24 +10,22 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 
-public class BotApp extends TelegramLongPollingBot  {
+public class WebApp extends TelegramLongPollingBot  {
 
     private Comandos commandsHandler;
 
     public static void main(String[] args) throws Exception {
-        Dotenv dotenv = Dotenv.load();
 
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
-
         try {
-            telegramBotsApi.registerBot(new BotApp());
+            telegramBotsApi.registerBot(new WebApp());
             System.out.println("ya esta corriendo");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public BotApp() {
+    public WebApp() {
         this.commandsHandler = new Comandos();
     }
     
@@ -62,12 +57,12 @@ public class BotApp extends TelegramLongPollingBot  {
 //
     @Override
     public String getBotUsername() {
-        return Dotenv.load().get("Nombre_Bot");
+        return System.getenv().get("Nombre_Bot");
     }
 
     @Override
     public String getBotToken() {
-        return Dotenv.load().get("BOT_TOKEN");
+        return System.getenv().get("BOT_TOKEN");
     }
 
     private void sendMessage(Long chatId, String text) {

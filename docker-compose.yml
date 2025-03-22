@@ -1,75 +1,94 @@
-version: '1.0'
-
+version: '3.8'
 services:
-  colaboradores:
-    build: ./colaboradores
-    container_name: proyecto1
+  metricas:
+    build: ./metrics
+    env_file: .env
+    container_name: metrics
     ports:
-      - "3000:3000"
-    volumes:
-      - ./colaboradores:/app
+      - "8081:8081"
     networks:
       - internal_network
-
-  heladeras:
-    build: ./heladeras
-    container_name: heladeras
+    healthcheck:
+      test: ["CMD", "pgrep", "java"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 15s
+      
+  telegram:
+    build: ./telegram
+    env_file: .env
+    container_name: telegram
     ports:
-      - "4000:4000"
-    volumes:
-      - ./heladeras:/app
+      - "8080:8080"
     networks:
       - internal_network
+    healthcheck:
+      test: ["CMD", "pgrep", "java"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 15s
+      
+  vianda:
+    build: ./viandas
+    env_file: .env
+    container_name: viandas
+    ports:
+      - "8082:8082"
+    networks:
+      - internal_network
+    healthcheck:
+      test: ["CMD", "pgrep", "java"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 15s
 
   logistica:
     build: ./logistica
+    env_file: .env
     container_name: logistica
     ports:
-      - "5000:5000"
-    volumes:
-      - ./logistica:/app
+      - "8083:8083"
     networks:
       - internal_network
-
-  viandas:
-    build: ./viandas
-    container_name: viandas
+    healthcheck:
+      test: ["CMD", "pgrep", "java"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 15s
+ 
+  heladera:
+    build: ./heladeras
+    env_file: .env
+    container_name: heladera
     ports:
-      - "5000:5000"
-    volumes:
-      - ./viandas:/app
+      - "8084:8084"
     networks:
       - internal_network
+    healthcheck:
+      test: ["CMD", "pgrep", "java"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 15s
 
-  metrics:
-    build: ./metrics
-    container_name: metrics
+  colaborador:
+    build: ./colaboradores
+    env_file: .env
+    container_name: colaborador
     ports:
-      - "5000:5000"
-    volumes:
-      - ./metrics:/app
+      - "8085:8085"
     networks:
       - internal_network
-
-  telegram:
-    build: ./telegram
-    container_name: telegram
-    ports:
-      - "5000:5000"
-    volumes:
-      - ./telegram:/app
-    networks:
-      - internal_network
-
-  sensor:
-    build: ./sensor
-    container_name: sensor
-    ports:
-      - "5000:5000"
-    volumes:
-      - ./telegram:/app
-    networks:
-      - internal_network
+    healthcheck:
+      test: ["CMD", "pgrep", "java"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 15s
 
 networks:
   internal_network:

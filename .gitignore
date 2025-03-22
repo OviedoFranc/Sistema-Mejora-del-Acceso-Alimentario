@@ -1,5 +1,7 @@
 **/.idea/
+.idea
 **/.env
+.env
 **/target
 node_modules/
 vendor/

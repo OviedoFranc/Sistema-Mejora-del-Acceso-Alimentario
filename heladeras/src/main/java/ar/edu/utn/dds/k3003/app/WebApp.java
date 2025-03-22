@@ -15,7 +15,6 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
-import io.github.cdimascio.dotenv.Dotenv;
 import io.javalin.Javalin;
 import io.javalin.json.JavalinJackson;
 import java.util.concurrent.Executors;
@@ -50,13 +49,12 @@ public class WebApp {
     public static void main(String[] args) throws IOException, TimeoutException {
 
         startEntityManagerFactory();
-        Dotenv dotenv = Dotenv.load();
         var objectMapper = createObjectMapper();
         Fachada fachada = new Fachada(entityManagerFactory);
         fachada.setViandasProxy(new ViandasProxy(objectMapper));
-        var port = Integer.parseInt(dotenv.get("PORT"));
-        tiempoSeteoNuevasTemperaturas =  Integer.parseInt(dotenv.get("TIMECRON_NEW_TEMPERATURES"));
-        tiempoRevisarUltimaTemperaturaSeteada =  Integer.parseInt(dotenv.get("TIMECRON_REVIEW_LAST_TEMPERATURE"));
+        var port = Integer.parseInt(System.getenv("PORTHELADERA"));
+        tiempoSeteoNuevasTemperaturas =  Integer.parseInt(System.getenv("TIMECRON_NEW_TEMPERATURES"));
+        tiempoRevisarUltimaTemperaturaSeteada =  Integer.parseInt(System.getenv("TIMECRON_REVIEW_LAST_TEMPERATURE"));
 
         app = Javalin.create(config -> {
             config.jsonMapper(new JavalinJackson().updateMapper(mapper -> {
@@ -121,29 +119,34 @@ public class WebApp {
 
     public static void startEntityManagerFactory() {
         Map<String, Object> configOverrides = new HashMap<>();
-        Dotenv dotenv = Dotenv.load();
-        configOverrides.put("javax.persistence.jdbc.url", dotenv.get("jdbcUrl"));
-        configOverrides.put("javax.persistence.jdbc.user", dotenv.get("jdbcUser"));
-        configOverrides.put("javax.persistence.jdbc.password", dotenv.get("jdbcPassword"));
-        configOverrides.put("javax.persistence.jdbc.driver", dotenv.get("jdbcDriver"));
-        entityManagerFactory = Persistence.createEntityManagerFactory("heladeradb", configOverrides);
+        configOverrides.put("javax.persistence.jdbc.url", System.getenv("jdbcUrl"));
+        configOverrides.put("javax.persistence.jdbc.user", System.getenv("jdbcUser"));
+        configOverrides.put("javax.persistence.jdbc.password", System.getenv("jdbcPassword"));
+        configOverrides.put("javax.persistence.jdbc.driver", System.getenv("jdbcDriver"));
+        configOverrides.put("hibernate.hbm2ddl.auto", System.getenv("hibernateDDL"));
+        configOverrides.put("hibernate.connection.pool_size", System.getenv("hibernatePoolSize"));
+        configOverrides.put("hibernate.dialect", System.getenv("hibernateDialect"));
+        configOverrides.put("hibernate.connection.release_mode", System.getenv("hibernateConnectionMode"));
+        configOverrides.put("hibernate.archive.autodetection", System.getenv("hibernateArchiveDetection"));
+        configOverrides.put("hibernate.default_schema", System.getenv("hibernateSchema"));
+        configOverrides.put("hibernate.format_sql", System.getenv("hibernateFormatSql"));
+
+        entityManagerFactory = Persistence.createEntityManagerFactory("db", configOverrides);
     }
 
     private static Channel initialCloudAMQPTopicConfiguration() throws IOException, TimeoutException {
-        Dotenv dotenv = Dotenv.load();
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(dotenv.get("QUEUE_HOST"));
-        factory.setUsername(dotenv.get("QUEUE_USERNAME"));
-        factory.setPassword(dotenv.get("QUEUE_PASSWORD"));
-        factory.setVirtualHost(dotenv.get("VHOST"));
+        factory.setHost(System.getenv("QUEUE_HOST"));
+        factory.setUsername(System.getenv("QUEUE_USERNAME"));
+        factory.setPassword(System.getenv("QUEUE_PASSWORD"));
+        factory.setVirtualHost(System.getenv("VHOST"));
         Connection connection = factory.newConnection();
         return connection.createChannel();
     }
 
     private static void setupConsumerTemperatura(HeladeraController heladeraController) throws IOException {
-        Dotenv dotenv = Dotenv.load();
-        String QUEUE = dotenv.get("QUEUE_NAME_TEMPERATURA");
-        channel.queueDeclare(QUEUE, false, false, false, null);
+        String QUEUE = System.getenv("QUEUE_NAME_TEMPERATURA");
+        channel.queueDeclare(QUEUE, true, false, false, null);
         System.out.println("Esperando mensajes en la cola " + QUEUE);
 
         // PROCESAMIENTO DE LOS MENSAJES
@@ -172,8 +175,8 @@ public class WebApp {
     }
 
     private static void setupConsumerMovimiento() throws IOException {
-        Dotenv dotenv = Dotenv.load();
-        String QUEUE = dotenv.get("QUEUE_NAME_MOVIMIENTO");
+
+        String QUEUE = System.getenv("QUEUE_NAME_MOVIMIENTO");
         channel.queueDeclare(QUEUE, false, false, false, null);
         System.out.println("Esperando mensajes en la cola " + QUEUE);
 

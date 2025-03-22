@@ -1,15 +1,8 @@
 FROM maven:3.8.6-openjdk-18 AS build
 COPY . .
-RUN mvn clean package assembly:single -DskipTests
-
+RUN mvn clean package assembly:single -DskipTests -T 1C
 FROM openjdk:17-jdk-slim
-COPY --from=build /target/TPDDSApp.jar TPDDSApp.jar
-
+WORKDIR /app
+COPY --from=build /target/TPDDSApp.jar logistica.jar
 EXPOSE 8080
-ENTRYPOINT ["java","-classpath","TPDDSApp.jar","ar.edu.utn.dds.k3003.app.WebApp"]
-
-
-
-
-
-
+ENTRYPOINT ["java","-jar","logistica.jar"]
