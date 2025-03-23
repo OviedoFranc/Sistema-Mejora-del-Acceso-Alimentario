@@ -16,6 +16,8 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 import io.javalin.Javalin;
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
 import io.javalin.json.JavalinJackson;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -65,6 +67,7 @@ public class WebApp {
         incidenteService = new IncidenteService(entityManagerFactory, fachada);
         var heladeraController = new HeladeraController(fachada,incidenteService);
 
+        app.get("/healthcheck", WebApp::healthcheck);
         app.get("/heladeras/crearGenericas", heladeraController::crearHeladerasGenericas);
         app.get("/heladeras/deleteAll", heladeraController::borrarTodo);
         app.post("/heladeras", heladeraController::agregar);
@@ -115,6 +118,21 @@ public class WebApp {
         var sdf = new SimpleDateFormat(Constants.DEFAULT_SERIALIZATION_FORMAT, Locale.getDefault());
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         objectMapper.setDateFormat(sdf);
+    }
+
+    private static void healthcheck(Context context){
+        try {
+            Process process = Runtime.getRuntime().exec("pgrep java");
+            int exitCode = process.waitFor();
+
+            if (exitCode == 0) {
+                context.status(HttpStatus.OK);
+            } else {
+                context.status(HttpStatus.SERVICE_UNAVAILABLE);
+            }
+        } catch (Exception e) {
+            context.status(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     public static void startEntityManagerFactory() {

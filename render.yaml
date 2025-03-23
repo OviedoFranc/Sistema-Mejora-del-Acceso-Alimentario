@@ -1,0 +1,53 @@
+services:
+  - type: web
+    name: metricas
+    dockerContext: ./metrics
+    envVars:
+      - fromFile: .env
+    port: 8081
+    healthCheckPath: /healthcheck
+    plan: free
+
+  - type: web
+    name: telegram
+    dockerContext: ./telegram
+    envVars:
+      - fromFile: .env
+    port: 8080
+    plan: free
+
+  - type: web
+    name: vianda
+    dockerContext: ./viandas
+    envVars:
+      - fromFile: .env
+    port: 8082
+    healthCheckPath: /healthcheck
+    plan: free
+
+  - type: web
+    name: logistica
+    dockerContext: ./logistica
+    envVars:
+      - fromFile: .env
+    port: 8083
+    healthCheckPath: /healthcheck
+    plan: free
+
+  - type: web
+    name: heladera
+    dockerContext: ./heladeras
+    envVars:
+      - fromFile: .env
+    port: 8084
+    healthCheckPath: /healthcheck
+    plan: free
+
+  - type: web
+    name: colaborador
+    dockerContext: ./colaboradores
+    envVars:
+      - fromFile: .env
+    port: 8085
+    healthCheckPath: /healthcheck
+    plan: free

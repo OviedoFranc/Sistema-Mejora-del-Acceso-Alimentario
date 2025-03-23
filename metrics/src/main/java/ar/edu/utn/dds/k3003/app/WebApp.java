@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.javalin.Javalin;
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
 import io.javalin.micrometer.MicrometerPlugin;
 
 import java.text.SimpleDateFormat;
@@ -29,6 +31,7 @@ public class WebApp {
 
         Javalin app = Javalin.create(config -> config.registerPlugin(micrometerPlugin)).start(port);
 
+        app.get("/healthcheck",WebApp::healthcheck);
         app.get("/metrics/aperturaHeladera", metricController::aperturaHeladera);
         app.get("/metrics/fallaHeladeras", metricController::fallaHeladeras);
         app.get("/metrics/incidentes/{accion}", metricController::incidentesActivos);
@@ -43,13 +46,19 @@ public class WebApp {
         app.delete("/metrics/clear", metricController::resetearMetricas);
     }
 
-    public static void configureObjectMapper(ObjectMapper objectMapper) {
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        var sdf = new SimpleDateFormat(Constants.DEFAULT_SERIALIZATION_FORMAT, Locale.getDefault());
-        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
-        objectMapper.setDateFormat(sdf);
+    private static void healthcheck(Context context){
+        try {
+            Process process = Runtime.getRuntime().exec("pgrep java");
+            int exitCode = process.waitFor();
+
+            if (exitCode == 0) {
+                context.status(HttpStatus.OK);
+            } else {
+                context.status(HttpStatus.SERVICE_UNAVAILABLE);
+            }
+        } catch (Exception e) {
+            context.status(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
 }
