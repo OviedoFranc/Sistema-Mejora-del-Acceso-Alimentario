@@ -15,7 +15,6 @@ public class WebApp extends TelegramLongPollingBot  {
     private Comandos commandsHandler;
 
     public static void main(String[] args) throws Exception {
-
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
         try {
             telegramBotsApi.registerBot(new WebApp());

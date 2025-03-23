@@ -4,5 +4,5 @@ RUN mvn clean package assembly:single -DskipTests -T 1C
 FROM openjdk:17-jdk-slim
 WORKDIR /app
 COPY --from=build /target/TPDDSApp.jar viandas.jar
-EXPOSE 8080
+EXPOSE 8082
 ENTRYPOINT ["java","-jar","viandas.jar"]

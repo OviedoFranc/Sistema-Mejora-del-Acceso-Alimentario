@@ -4,7 +4,6 @@ import ar.edu.utn.dds.k3003.clients.HeladeraProxy;
 import ar.edu.utn.dds.k3003.clients.LogisticaProxy;
 import ar.edu.utn.dds.k3003.clients.ViandasProxy;
 import ar.edu.utn.dds.k3003.facades.dtos.Constants;
-import ar.edu.utn.dds.k3003.model.Colaborador;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -43,7 +42,6 @@ public class WebApp {
             config.jsonMapper(new JavalinJackson().updateMapper(WebApp::configureObjectMapper));
         }).start(port);
 
-        app.get("/healthcheck", WebApp::healthcheck);
         app.post("/colaboradores", colaboradorController::agregar);
         app.post("/colaboradores/avisar",colaboradorController::avisar);
         app.post("/colaboradores/suscribirse", colaboradorController::suscribirse);
@@ -71,21 +69,6 @@ public class WebApp {
         var sdf = new SimpleDateFormat(Constants.DEFAULT_SERIALIZATION_FORMAT, Locale.getDefault());
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         objectMapper.setDateFormat(sdf);
-    }
-
-    private static void healthcheck(Context context){
-        try {
-            Process process = Runtime.getRuntime().exec("pgrep java");
-            int exitCode = process.waitFor();
-
-            if (exitCode == 0) {
-                context.status(HttpStatus.OK);
-            } else {
-                context.status(HttpStatus.SERVICE_UNAVAILABLE);
-            }
-        } catch (Exception e) {
-            context.status(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
     }
 
     public static void startEntityManagerFactory() {

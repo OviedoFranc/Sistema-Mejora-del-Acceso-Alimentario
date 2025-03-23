@@ -166,8 +166,6 @@ public class Comandos extends TelegramLongPollingBot {
                 "/verRetirosDelDia - Devuelve una lista de las viandas retiradas\n" +
                 "/eliminarSuscripcion - Elimina la suscripcion de una heladera\n";
 
-        //aca poner todos los comandos
-
         sendMessage(chatId, menuText);
     }
     

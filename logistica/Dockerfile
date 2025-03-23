@@ -4,5 +4,5 @@ RUN mvn clean package assembly:single -DskipTests -T 1C
 FROM openjdk:17-jdk-slim
 WORKDIR /app
 COPY --from=build /target/TPDDSApp.jar logistica.jar
-EXPOSE 8080
+EXPOSE 8083
 ENTRYPOINT ["java","-jar","logistica.jar"]

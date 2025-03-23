@@ -5,5 +5,5 @@ FROM openjdk:17-jdk-slim
 WORKDIR /app
 COPY --from=build /target/TPDDSApp.jar colaborador.jar
 
-EXPOSE 8080
+EXPOSE 8085
 CMD ["java","-jar","colaborador.jar"]
