@@ -12,6 +12,7 @@ public class Comandos extends TelegramLongPollingBot {
     private BotHeladera botHeladera;
     private BotVianda botViandas;
     private BotColaborador botColaborador;
+    private BotSensor botSensor;
     private Map<Long, String> esperandoUsuarios = new HashMap<>();
     private int idColaboradorActual;
 
@@ -20,6 +21,7 @@ public class Comandos extends TelegramLongPollingBot {
         this.botHeladera = new BotHeladera();
         this.botViandas = new BotVianda();
         this.botColaborador = new BotColaborador();
+        this.botSensor = new BotSensor();
     }
 
     public void handleCommand(Long chatId, String command) {
@@ -126,6 +128,13 @@ public class Comandos extends TelegramLongPollingBot {
                         "`colaboradorId` `heladeraId` `tipoDeSuscripcion` `cantidadN`\n" +
                         "Ejemplo: `1` `2` `“ViandasDisponibles“ `2`");
                 break;
+            case "/pararSensor":
+                esperandoUsuarios.put(chatId, "pararSensor");
+                sendMessage(chatId, "Por favor, envía los datos en el siguiente formato:\n" +
+                        "`heladeraId`\n" +
+                        "Ejemplo: `1`");
+                break;
+
             default:
                 sendMessage(chatId, "Comando no reconocido.");
         }
@@ -164,8 +173,9 @@ public class Comandos extends TelegramLongPollingBot {
                 "/verIncidentesDeHeladera - Devuelve el historial de incidentes de una heladera\n" +
                 "/verOcupacion - Devuelve una lista de las viandas dentro de la heladera\n" + 
                 "/verRetirosDelDia - Devuelve una lista de las viandas retiradas\n" +
-                "/eliminarSuscripcion - Elimina la suscripcion de una heladera\n";
-
+                "/eliminarSuscripcion - Elimina la suscripcion de una heladera\n" +
+                "/pararSensor - Para el sensor de una heladera, esto genera error y es para probar la cola de mensajes\n"+
+                "/reanudarSensor - Reanuda el sensor de una heladera, es para probar la cola de mensajes\n";
         sendMessage(chatId, menuText);
     }
     
@@ -225,7 +235,10 @@ public class Comandos extends TelegramLongPollingBot {
             case "eliminarSuscripcion":
             	botHeladera.eliminarSuscripcion(chatId, message, this);
                 break;
-            
+            case "pararSensor":
+                botSensor.pararSensor(chatId, message, this);
+            case "reanudarSensor":
+                botSensor.reanudarSensor(chatId, message, this);
         }
     }
     

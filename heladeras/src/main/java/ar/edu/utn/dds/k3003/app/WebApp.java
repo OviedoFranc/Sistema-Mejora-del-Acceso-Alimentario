@@ -84,24 +84,11 @@ public class WebApp {
         app.get("/heladeras/{heladeraId}/cantidadViandasHastaLLenar", heladeraController::cantidadViandasHastaLLenar);
         app.delete("/{heladeraId}/suscripciones", heladeraController::eliminarSuscripcion);
         app.get("/{heladeraId}/suscripciones", heladeraController::obtenerSuscripciones);
-        //TODO borrar esto es unicamente prueba
-        app.get("/stop/temperaturaHeladera/{heladeraId}", ctx -> {
-            Integer heladeraId = Integer.parseInt(ctx.pathParam("heladeraId"));
-            heladerasExcluidasDeSeteoTemperatura.add(heladeraId); // Añadir a la lista de heladeras excluidas
-            ctx.result("Heladera " + heladeraId + " excluida del registro de temperatura.");
-        });
-        //TODO borrar esto es unicamente prueba
-        app.get("/continue/temperaturaHeladera/{heladeraId}", ctx -> {
-            Integer heladeraId = Integer.parseInt(ctx.pathParam("heladeraId"));
-            heladerasExcluidasDeSeteoTemperatura.remove(heladeraId); // Añadir a la lista de heladeras excluidas
-            ctx.result("Heladera " + heladeraId + " excluida del registro de temperatura.");
-        });
-
         channel = initialCloudAMQPTopicConfiguration();
         setupConsumerTemperatura(heladeraController);
         setupConsumerMovimiento();
         cronRevisadorUltimaTemperaturaSeteadaEnHeladeras();
-        cronTemperaturaReporteContinuo(heladeraController);
+        reporteContinuoTemperaturaCola(heladeraController);
     }
 
     public static ObjectMapper createObjectMapper() {
@@ -236,28 +223,31 @@ public class WebApp {
         scheduler.scheduleAtFixedRate(tarea, tiempoHastaProximaEjecucion, 24, TimeUnit.HOURS);
     }
 
-    //TODO BORRAR ESTA PARTE ES SOLO DE PRUEBA EN TIEMPO DE EJECUCION
-    private static void cronTemperaturaReporteContinuo(HeladeraController heladeraController){
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        // Tarea a ejecutar
-        Runnable tarea = () -> {
-            try {
-                List<Heladera> heladeras = heladeraController.obtenerTodasLasHeladeras();
-                for (Heladera heladera : heladeras) {
-                    if(!heladerasExcluidasDeSeteoTemperatura.contains(heladera.getHeladeraId())) {
-                        TemperaturaDTO temperaturaDTO = new TemperaturaDTO(utils.randomNumberBetween(0,15), heladera.getHeladeraId(), LocalDateTime.now());
-                        heladeraController.registrarTemperatura(temperaturaDTO);
-                    }
-                    else {
-                        System.out.println("Heladera " + heladera.getHeladeraId() + " excluida del registro de temperatura.");
-                    }
-                }
+    private static void reporteContinuoTemperaturaCola(HeladeraController heladeraController) throws IOException {
+        String QUEUE = System.getenv("QUEUE_NAME_TEMPERATURA");
+        channel.queueDeclare(QUEUE, false, false, false, null);
+        System.out.println("Esperando TEMPERATURAS en la cola " + QUEUE);
 
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new RuntimeException("Error con las temperaturas: " + e.getMessage());
+        // PROCESAMIENTO DE LOS MENSAJES
+        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+            String message = new String(delivery.getBody(), "UTF-8");
+            // Mensaje esperado "Heladera %d - Temperatura %d°C",
+            String[] parts = message.split(" - ");
+            if (parts.length == 1) {
+                String heladera = parts[1]; // "Heladera ID"
+                // Extraigo el ID de la heladera
+                int heladeraID = Integer.parseInt(heladera.split(" ")[2]); //
+                String temp = parts[1]; // "Temperatura temp"
+                // Extraigo la Temperatura de la heladera
+                int temperatura = Integer.parseInt(temp.split(" ")[2]);
+                System.out.println("Heladera " + heladeraID + " - Temperatura "+ temperatura + "°C");
+                TemperaturaDTO temperaturaDTO = new TemperaturaDTO(temperatura, heladeraID, LocalDateTime.now());
+                heladeraController.registrarTemperatura(temperaturaDTO);
+            } else {
+                System.err.println("Formato de mensaje incorrecto: " + message);
             }
         };
-        scheduler.scheduleAtFixedRate(tarea, 0, tiempoSeteoNuevasTemperaturas, TimeUnit.SECONDS);
+
+        channel.basicConsume(QUEUE, true, deliverCallback, consumerTag -> {});
     }
 }

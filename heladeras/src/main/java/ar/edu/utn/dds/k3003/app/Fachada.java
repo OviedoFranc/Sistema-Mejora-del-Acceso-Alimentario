@@ -3,6 +3,7 @@ package ar.edu.utn.dds.k3003.app;
 import ar.edu.utn.dds.k3003.model.DTO.RetiroDTODay;
 import ar.edu.utn.dds.k3003.model.Incidente;
 import ar.edu.utn.dds.k3003.model.TipoSuscripcion;
+import ar.edu.utn.dds.k3003.utils.utilsHeladera;
 import ar.edu.utn.dds.k3003.utils.utilsNotifIncidentAndEvents;
 import ar.edu.utn.dds.k3003.facades.FachadaViandas;
 import ar.edu.utn.dds.k3003.facades.dtos.*;
@@ -115,6 +116,7 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras {
             SensorTemperatura sensor = new SensorTemperatura(heladera);
             heladera.setSensorTemperatura(sensor);
             entityManager.persist(heladera);
+            utilsHeladera.avisoSensorCreacionHeladera(heladera.getHeladeraId());
             return new HeladeraDTO(heladera.getHeladeraId(), heladera.getNombre(), heladera.cantidadDeViandas());
         } catch (Exception e) {
             if (entityManager.getTransaction().isActive()) {
@@ -556,6 +558,7 @@ public class Fachada implements ar.edu.utn.dds.k3003.facades.FachadaHeladeras {
 
                 if (heladera != null) {
                     entityManager.remove(heladera);
+                    utilsHeladera.avisoSensorEliminacionHeladera(heladeraId);
                 } else {
                     throw new RuntimeException("No se encontró la heladera con ID: " + heladeraId);
                 }
