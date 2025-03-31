@@ -6,7 +6,7 @@ import ar.edu.utn.dds.k3003.clients.ViandasProxy;
 import ar.edu.utn.dds.k3003.facades.dtos.Constants;
 import ar.edu.utn.dds.k3003.facades.dtos.TemperaturaDTO;
 import ar.edu.utn.dds.k3003.model.Heladera;
-import ar.edu.utn.dds.k3003.utils.utils;
+import ar.edu.utn.dds.k3003.utils.utilsHeladera;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -16,8 +16,6 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 import io.javalin.Javalin;
-import io.javalin.http.Context;
-import io.javalin.http.HttpStatus;
 import io.javalin.json.JavalinJackson;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -44,9 +42,7 @@ public class WebApp {
     public static Javalin app;
     public static IncidenteService incidenteService;
     private static List<Integer> heladerasExcluidasDeSeteoTemperatura = new ArrayList<>();
-    private static Integer tiempoSeteoNuevasTemperaturas;
     private static Integer tiempoRevisarUltimaTemperaturaSeteada;
-
 
     public static void main(String[] args) throws IOException, TimeoutException {
 
@@ -55,7 +51,6 @@ public class WebApp {
         Fachada fachada = new Fachada(entityManagerFactory);
         fachada.setViandasProxy(new ViandasProxy(objectMapper));
         var port = Integer.parseInt(System.getenv("PORTHELADERA"));
-        tiempoSeteoNuevasTemperaturas =  Integer.parseInt(System.getenv("TIMECRON_NEW_TEMPERATURES"));
         tiempoRevisarUltimaTemperaturaSeteada =  Integer.parseInt(System.getenv("TIMECRON_REVIEW_LAST_TEMPERATURE"));
 
         app = Javalin.create(config -> {
@@ -88,7 +83,7 @@ public class WebApp {
         setupConsumerTemperatura(heladeraController);
         setupConsumerMovimiento();
         cronRevisadorUltimaTemperaturaSeteadaEnHeladeras();
-        reporteContinuoTemperaturaCola(heladeraController);
+        adviceSensor(fachada);
     }
 
     public static ObjectMapper createObjectMapper() {
@@ -152,8 +147,7 @@ public class WebApp {
                 Integer temperatura = Integer.parseInt(temperaturaPart.split(" ")[1].replace("°C", ""));
 
                 TemperaturaDTO temperaturaDTO = new TemperaturaDTO(temperatura, heladeraId, LocalDateTime.now());
-
-                System.out.println("Processed TemperaturaDTO: " + temperaturaDTO);
+                System.out.println("TEMPERATURA_QUEUE - > Procesando TemperaturaDTO: " + temperaturaDTO);
                 heladeraController.registrarTemperatura(temperaturaDTO);
             } else {
                 System.err.println("Formato de mensaje incorrecto: " + message);
@@ -194,10 +188,11 @@ public class WebApp {
 
     private static void cronRevisadorUltimaTemperaturaSeteadaEnHeladeras() {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-
         // Tarea a ejecutar
         Runnable tarea = () -> {
+            System.out.println("\n----------------------------- Iniciando Control de Temperaturas  -----------------------------\n");
             incidenteService.controlarTiempoDeEsperaMaximoTemperaturas();
+            System.out.println("-----------------------------  -----------------------------\n");
         };
         scheduler.scheduleAtFixedRate(tarea, 0, tiempoRevisarUltimaTemperaturaSeteada, TimeUnit.SECONDS);
     }
@@ -218,36 +213,12 @@ public class WebApp {
         Runnable tarea = () -> {
             fachada.limpiarRetirosDelDia();
         };
-
         // Programar la tarea para que se ejecute a la hora calculada y luego cada 24 horas
         scheduler.scheduleAtFixedRate(tarea, tiempoHastaProximaEjecucion, 24, TimeUnit.HOURS);
     }
 
-    private static void reporteContinuoTemperaturaCola(HeladeraController heladeraController) throws IOException {
-        String QUEUE = System.getenv("QUEUE_NAME_TEMPERATURA");
-        channel.queueDeclare(QUEUE, false, false, false, null);
-        System.out.println("Esperando TEMPERATURAS en la cola " + QUEUE);
-
-        // PROCESAMIENTO DE LOS MENSAJES
-        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-            String message = new String(delivery.getBody(), "UTF-8");
-            // Mensaje esperado "Heladera %d - Temperatura %d°C",
-            String[] parts = message.split(" - ");
-            if (parts.length == 1) {
-                String heladera = parts[1]; // "Heladera ID"
-                // Extraigo el ID de la heladera
-                int heladeraID = Integer.parseInt(heladera.split(" ")[2]); //
-                String temp = parts[1]; // "Temperatura temp"
-                // Extraigo la Temperatura de la heladera
-                int temperatura = Integer.parseInt(temp.split(" ")[2]);
-                System.out.println("Heladera " + heladeraID + " - Temperatura "+ temperatura + "°C");
-                TemperaturaDTO temperaturaDTO = new TemperaturaDTO(temperatura, heladeraID, LocalDateTime.now());
-                heladeraController.registrarTemperatura(temperaturaDTO);
-            } else {
-                System.err.println("Formato de mensaje incorrecto: " + message);
-            }
-        };
-
-        channel.basicConsume(QUEUE, true, deliverCallback, consumerTag -> {});
+    private static void adviceSensor(Fachada fachada) {
+        List<Heladera> heladeras = fachada.obtenerTodasLasHeladeras();
+        for(Heladera heladera : heladeras) utilsHeladera.avisoSensorCreacionHeladera(heladera.getHeladeraId());
     }
 }

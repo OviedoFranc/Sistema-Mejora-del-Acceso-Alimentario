@@ -1,65 +1,5 @@
 version: '3.8'
 services:
-  metricas:
-    build: ./metrics
-    env_file: .env
-    container_name: metrics
-    ports:
-      - "8081:8081"
-    networks:
-      - internal_network
-    healthcheck:
-      test: ["CMD", "pgrep", "java"]
-      interval: 10s
-      timeout: 5s
-      retries: 6
-      start_period: 15s
-      
-  telegram:
-    build: ./telegram
-    env_file: .env
-    container_name: telegram
-    ports:
-      - "8080:8080"
-    networks:
-      - internal_network
-    healthcheck:
-      test: ["CMD", "pgrep", "java"]
-      interval: 10s
-      timeout: 5s
-      retries: 6
-      start_period: 15s
-      
-  vianda:
-    build: ./viandas
-    env_file: .env
-    container_name: viandas
-    ports:
-      - "8082:8082"
-    networks:
-      - internal_network
-    healthcheck:
-      test: ["CMD", "pgrep", "java"]
-      interval: 10s
-      timeout: 5s
-      retries: 6
-      start_period: 15s
-
-  logistica:
-    build: ./logistica
-    env_file: .env
-    container_name: logistica
-    ports:
-      - "8083:8083"
-    networks:
-      - internal_network
-    healthcheck:
-      test: ["CMD", "pgrep", "java"]
-      interval: 10s
-      timeout: 5s
-      retries: 6
-      start_period: 15s
- 
   heladera:
     build: ./heladeras
     env_file: .env
@@ -75,19 +15,19 @@ services:
       retries: 6
       start_period: 15s
 
-  colaborador:
-    build: ./colaboradores
+  sensor:
+    build: ./sensor
     env_file: .env
-    container_name: colaborador
+    container_name: sensor
     ports:
-      - "8085:8085"
+      - "8089:8089"
     networks:
       - internal_network
     healthcheck:
       test: ["CMD", "pgrep", "java"]
       interval: 10s
       timeout: 5s
-      retries: 6
+      retries: 6  
       start_period: 15s
 
 networks:

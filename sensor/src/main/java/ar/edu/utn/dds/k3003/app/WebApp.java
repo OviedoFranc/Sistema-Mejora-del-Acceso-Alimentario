@@ -20,13 +20,14 @@ public class WebApp {
     private static Set<Integer> heladerasID = new HashSet<>();
 
     public static void main(String[] args) throws IOException, TimeoutException {
-        QUEUE_NAME = System.getenv("QUEUE_NAME");
+        QUEUE_NAME = System.getenv("QUEUE_NAME_TEMPERATURA");
         tiempoSeteoNuevasTemperaturas =  Integer.parseInt(System.getenv("TIMECRON_NEW_TEMPERATURES"));
         channel = initialCloudAMQPTopicConfiguration();
+        channel.queueDeclare(QUEUE_NAME, true, false, false, null);
         app = Javalin.create();
         app.start(Integer.parseInt(System.getenv("PORTSENSOR")));
-        app.get("/addSensorHeladera/{Id}", ctx -> { Integer id = Integer.parseInt(ctx.pathParam("Id")); heladerasID.add(id); ctx.status(HttpStatus.OK); } );
-        app.get("/stopSensorHeladera/{Id}", ctx -> { Integer id = Integer.parseInt(ctx.pathParam("Id")); heladerasID.remove(id); ctx.status(HttpStatus.OK); } );
+        app.get("/addSensorHeladera/{Id}", ctx -> { Integer id = Integer.parseInt(ctx.pathParam("Id")); heladerasID.add(id); System.out.println("Registro de sensor heladera "+id);ctx.status(HttpStatus.OK); } );
+        app.get("/stopSensorHeladera/{Id}", ctx -> { Integer id = Integer.parseInt(ctx.pathParam("Id")); heladerasID.remove(id); System.out.println("Eliminacion de sensor heladera "+id); ctx.status(HttpStatus.OK); } );
         cronSensor();
     }
     private static void pushMessageQueue() throws IOException {
@@ -36,11 +37,10 @@ public class WebApp {
                     heladeraID,
                     rand.nextInt(15));
             Channel channel = WebApp.channel;
-            channel.queueDeclare(QUEUE_NAME, false, false, false, null);
-            channel.basicPublish(mensaje, QUEUE_NAME, null, mensaje.getBytes("UTF-8"));
+            channel.basicPublish("", QUEUE_NAME, null, mensaje.getBytes("UTF-8"));
         }
     }
-    private static Channel initialCloudAMQPTopicConfiguration() throws IOException, TimeoutException, TimeoutException {
+    private static Channel initialCloudAMQPTopicConfiguration() throws IOException, TimeoutException {
         ConnectionFactory factory = new ConnectionFactory();
         factory.setHost(System.getenv("QUEUE_HOST"));
         factory.setUsername(System.getenv("QUEUE_USERNAME"));

@@ -40,3 +40,10 @@ services:
     dockerContext: ./colaboradores
     dockerfilePath: ./colaboradores/Dockerfile
     plan: free
+
+  - type: web
+    name: sensor
+    runtime: docker
+    dockerContext: ./sensor
+    dockerfilePath: ./sensor/Dockerfile
+    plan: free
