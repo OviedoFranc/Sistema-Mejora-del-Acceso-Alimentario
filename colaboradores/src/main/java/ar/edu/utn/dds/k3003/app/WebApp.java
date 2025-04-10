@@ -4,7 +4,6 @@ import ar.edu.utn.dds.k3003.clients.HeladeraProxy;
 import ar.edu.utn.dds.k3003.clients.LogisticaProxy;
 import ar.edu.utn.dds.k3003.clients.ViandasProxy;
 import ar.edu.utn.dds.k3003.facades.dtos.Constants;
-import ar.edu.utn.dds.k3003.model.Colaborador;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -12,33 +11,26 @@ import ar.edu.utn.dds.k3003.controller.ColaboradorController;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.javalin.Javalin;
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
 import io.javalin.json.JavalinJackson;
-
-import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 public class WebApp {
+
+    public static EntityManagerFactory entityManagerFactory;
+
     public static void main(String[] args) {
         var env = System.getenv();
 
-        // Variables de entorno
-        var URL_VIANDAS = env.get("URL_VIANDAS");
-        var URL_LOGISTICA = env.get("URL_LOGISTICA");
-        var URL_HELADERAS = env.get("URL_HELADERAS");
-        var URL_COLABORADORES = env.get("URL_COLABORADORES");
-
-
-
         ObjectMapper objectMapper = createObjectMapper();
-        var fachada = new Fachada();
+        startEntityManagerFactory();
+        var fachada = new Fachada(entityManagerFactory);
 
-
-        var port = Integer.parseInt(env.getOrDefault("PORT", "8081")); //CUIDADO QUE EN GENERAL ES 8080
+        var port = Integer.parseInt(env.getOrDefault("PORTCOLABORADOR", "8085"));
 
         fachada.setLogisticaProxy(new LogisticaProxy(objectMapper));
         fachada.setViandasProxy(new ViandasProxy(objectMapper));
@@ -49,8 +41,6 @@ public class WebApp {
         var app = Javalin.create(config -> {
             config.jsonMapper(new JavalinJackson().updateMapper(WebApp::configureObjectMapper));
         }).start(port);
-
-
 
         app.post("/colaboradores", colaboradorController::agregar);
         app.post("/colaboradores/avisar",colaboradorController::avisar);
@@ -79,5 +69,22 @@ public class WebApp {
         var sdf = new SimpleDateFormat(Constants.DEFAULT_SERIALIZATION_FORMAT, Locale.getDefault());
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
         objectMapper.setDateFormat(sdf);
+    }
+
+    public static void startEntityManagerFactory() {
+        Map<String, Object> configOverrides = new HashMap<>();
+        configOverrides.put("javax.persistence.jdbc.url", System.getenv("jdbcUrl"));
+        configOverrides.put("javax.persistence.jdbc.user", System.getenv("jdbcUser"));
+        configOverrides.put("javax.persistence.jdbc.password", System.getenv("jdbcPassword"));
+        configOverrides.put("javax.persistence.jdbc.driver", System.getenv("jdbcDriver"));
+        configOverrides.put("hibernate.hbm2ddl.auto", System.getenv("hibernateDDL"));
+        configOverrides.put("hibernate.connection.pool_size", System.getenv("hibernatePoolSize"));
+        configOverrides.put("hibernate.dialect", System.getenv("hibernateDialect"));
+        configOverrides.put("hibernate.connection.release_mode", System.getenv("hibernateConnectionMode"));
+        configOverrides.put("hibernate.archive.autodetection", System.getenv("hibernateArchiveDetection"));
+        configOverrides.put("hibernate.default_schema", System.getenv("hibernateSchema"));
+        configOverrides.put("hibernate.format_sql", System.getenv("hibernateFormatSql"));
+
+        entityManagerFactory = Persistence.createEntityManagerFactory("db", configOverrides);
     }
 }

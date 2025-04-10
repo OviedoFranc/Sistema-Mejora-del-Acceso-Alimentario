@@ -10,17 +10,17 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 public interface FachadaHeladera {
-        HeladeraDTO agregar(HeladeraDTO var1);
+    HeladeraDTO agregar(HeladeraDTO var1);
 
-        void depositar(Integer var1, String var2) throws NoSuchElementException;
+    void depositar(Integer var1, String var2) throws NoSuchElementException;
 
-        Integer cantidadViandas(Integer var1) throws NoSuchElementException;
+    Integer cantidadViandas(Integer var1) throws NoSuchElementException;
 
-        void retirar(RetiroDTO var1) throws NoSuchElementException;
+    void retirar(RetiroDTO var1) throws NoSuchElementException;
 
-        void temperatura(TemperaturaDTO var1);
+    void temperatura(TemperaturaDTO var1);
 
-        List<TemperaturaDTO> obtenerTemperaturas(Integer var1);
+    List<TemperaturaDTO> obtenerTemperaturas(Integer var1);
 
     void getReportarFalla(Integer heladeraId);
 

@@ -1,6 +1,5 @@
 package ar.edu.utn.dds.k3003.Service;
 
-import io.github.cdimascio.dotenv.Dotenv;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -8,8 +7,7 @@ import java.net.http.HttpResponse;
 
 public class UtilsMetrics {
     public static void actualizarColaboradores(boolean aumentar, boolean donador) {
-        Dotenv dotenv = Dotenv.load();
-        var url = dotenv.get("URL_METRICS_2");
+        var url = System.getenv("URL_METRICS" + "/cant");
         HttpClient client = HttpClient.newHttpClient();
 
         if (donador) {
@@ -41,8 +39,7 @@ public class UtilsMetrics {
     }
 
     public static void actualizarCantColaboradores(boolean aumentar) {
-        Dotenv dotenv = Dotenv.load();
-        var url = dotenv.get("URL_METRICS_1");
+        var url = System.getenv("URL_METRICS" + "/cantColaboradores");
         HttpClient client = HttpClient.newHttpClient();
 
         if (aumentar) {

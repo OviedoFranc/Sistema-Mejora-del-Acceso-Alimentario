@@ -37,19 +37,15 @@ public class Fachada {
     private FachadaViandas fachadaViandas;
     private FachadaHeladeras fachadaHeladeras;
     private FachadaColaboradoresModificada fachadaColaboradores;
-
-    private EntityManagerFactory entityManagerFactory;
     private EntityManager entityManager;
 
-    public Fachada() {
-        this.entityManagerFactory = Persistence.createEntityManagerFactory("entrega3_tp_dds");
+    public Fachada(EntityManagerFactory entityManagerFactory) {
         this.entityManager = entityManagerFactory.createEntityManager();
         this.rutaRepository = new RutaRepository(entityManager);
         this.rutaMapper = new RutaMapper();
         this.trasladoMapper = new TrasladoMapper();
         this.trasladoRepository = new TrasladoRepository(entityManager);
     }
-
 
     public RutaDTO agregar(RutaDTO rutaDTO) throws IllegalArgumentException{
 

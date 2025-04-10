@@ -5,7 +5,6 @@ package ar.edu.utn.dds.k3003.model;
 // (powered by FernFlower decompiler)
 //
 
-
 import java.util.List;
 
 public final class ColaboradorDTO {

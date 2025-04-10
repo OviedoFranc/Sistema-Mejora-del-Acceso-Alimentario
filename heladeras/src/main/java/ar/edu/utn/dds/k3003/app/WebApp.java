@@ -6,7 +6,7 @@ import ar.edu.utn.dds.k3003.clients.ViandasProxy;
 import ar.edu.utn.dds.k3003.facades.dtos.Constants;
 import ar.edu.utn.dds.k3003.facades.dtos.TemperaturaDTO;
 import ar.edu.utn.dds.k3003.model.Heladera;
-import ar.edu.utn.dds.k3003.utils.utils;
+import ar.edu.utn.dds.k3003.utils.utilsHeladera;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -15,7 +15,6 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
-import io.github.cdimascio.dotenv.Dotenv;
 import io.javalin.Javalin;
 import io.javalin.json.JavalinJackson;
 import java.util.concurrent.Executors;
@@ -43,20 +42,16 @@ public class WebApp {
     public static Javalin app;
     public static IncidenteService incidenteService;
     private static List<Integer> heladerasExcluidasDeSeteoTemperatura = new ArrayList<>();
-    private static Integer tiempoSeteoNuevasTemperaturas;
     private static Integer tiempoRevisarUltimaTemperaturaSeteada;
-
 
     public static void main(String[] args) throws IOException, TimeoutException {
 
         startEntityManagerFactory();
-        Dotenv dotenv = Dotenv.load();
         var objectMapper = createObjectMapper();
         Fachada fachada = new Fachada(entityManagerFactory);
         fachada.setViandasProxy(new ViandasProxy(objectMapper));
-        var port = Integer.parseInt(dotenv.get("PORT"));
-        tiempoSeteoNuevasTemperaturas =  Integer.parseInt(dotenv.get("TIMECRON_NEW_TEMPERATURES"));
-        tiempoRevisarUltimaTemperaturaSeteada =  Integer.parseInt(dotenv.get("TIMECRON_REVIEW_LAST_TEMPERATURE"));
+        var port = Integer.parseInt(System.getenv("PORTHELADERA"));
+        tiempoRevisarUltimaTemperaturaSeteada =  Integer.parseInt(System.getenv("TIMECRON_REVIEW_LAST_TEMPERATURE"));
 
         app = Javalin.create(config -> {
             config.jsonMapper(new JavalinJackson().updateMapper(mapper -> {
@@ -84,24 +79,11 @@ public class WebApp {
         app.get("/heladeras/{heladeraId}/cantidadViandasHastaLLenar", heladeraController::cantidadViandasHastaLLenar);
         app.delete("/{heladeraId}/suscripciones", heladeraController::eliminarSuscripcion);
         app.get("/{heladeraId}/suscripciones", heladeraController::obtenerSuscripciones);
-        //TODO borrar esto es unicamente prueba
-        app.get("/stop/temperaturaHeladera/{heladeraId}", ctx -> {
-            Integer heladeraId = Integer.parseInt(ctx.pathParam("heladeraId"));
-            heladerasExcluidasDeSeteoTemperatura.add(heladeraId); // Añadir a la lista de heladeras excluidas
-            ctx.result("Heladera " + heladeraId + " excluida del registro de temperatura.");
-        });
-        //TODO borrar esto es unicamente prueba
-        app.get("/continue/temperaturaHeladera/{heladeraId}", ctx -> {
-            Integer heladeraId = Integer.parseInt(ctx.pathParam("heladeraId"));
-            heladerasExcluidasDeSeteoTemperatura.remove(heladeraId); // Añadir a la lista de heladeras excluidas
-            ctx.result("Heladera " + heladeraId + " excluida del registro de temperatura.");
-        });
-
         channel = initialCloudAMQPTopicConfiguration();
         setupConsumerTemperatura(heladeraController);
         setupConsumerMovimiento();
         cronRevisadorUltimaTemperaturaSeteadaEnHeladeras();
-        cronTemperaturaReporteContinuo(heladeraController);
+        adviceSensor(fachada);
     }
 
     public static ObjectMapper createObjectMapper() {
@@ -121,29 +103,34 @@ public class WebApp {
 
     public static void startEntityManagerFactory() {
         Map<String, Object> configOverrides = new HashMap<>();
-        Dotenv dotenv = Dotenv.load();
-        configOverrides.put("javax.persistence.jdbc.url", dotenv.get("jdbcUrl"));
-        configOverrides.put("javax.persistence.jdbc.user", dotenv.get("jdbcUser"));
-        configOverrides.put("javax.persistence.jdbc.password", dotenv.get("jdbcPassword"));
-        configOverrides.put("javax.persistence.jdbc.driver", dotenv.get("jdbcDriver"));
-        entityManagerFactory = Persistence.createEntityManagerFactory("heladeradb", configOverrides);
+        configOverrides.put("javax.persistence.jdbc.url", System.getenv("jdbcUrl"));
+        configOverrides.put("javax.persistence.jdbc.user", System.getenv("jdbcUser"));
+        configOverrides.put("javax.persistence.jdbc.password", System.getenv("jdbcPassword"));
+        configOverrides.put("javax.persistence.jdbc.driver", System.getenv("jdbcDriver"));
+        configOverrides.put("hibernate.hbm2ddl.auto", System.getenv("hibernateDDL"));
+        configOverrides.put("hibernate.connection.pool_size", System.getenv("hibernatePoolSize"));
+        configOverrides.put("hibernate.dialect", System.getenv("hibernateDialect"));
+        configOverrides.put("hibernate.connection.release_mode", System.getenv("hibernateConnectionMode"));
+        configOverrides.put("hibernate.archive.autodetection", System.getenv("hibernateArchiveDetection"));
+        configOverrides.put("hibernate.default_schema", System.getenv("hibernateSchema"));
+        configOverrides.put("hibernate.format_sql", System.getenv("hibernateFormatSql"));
+
+        entityManagerFactory = Persistence.createEntityManagerFactory("db", configOverrides);
     }
 
     private static Channel initialCloudAMQPTopicConfiguration() throws IOException, TimeoutException {
-        Dotenv dotenv = Dotenv.load();
         ConnectionFactory factory = new ConnectionFactory();
-        factory.setHost(dotenv.get("QUEUE_HOST"));
-        factory.setUsername(dotenv.get("QUEUE_USERNAME"));
-        factory.setPassword(dotenv.get("QUEUE_PASSWORD"));
-        factory.setVirtualHost(dotenv.get("VHOST"));
+        factory.setHost(System.getenv("QUEUE_HOST"));
+        factory.setUsername(System.getenv("QUEUE_USERNAME"));
+        factory.setPassword(System.getenv("QUEUE_PASSWORD"));
+        factory.setVirtualHost(System.getenv("VHOST"));
         Connection connection = factory.newConnection();
         return connection.createChannel();
     }
 
     private static void setupConsumerTemperatura(HeladeraController heladeraController) throws IOException {
-        Dotenv dotenv = Dotenv.load();
-        String QUEUE = dotenv.get("QUEUE_NAME_TEMPERATURA");
-        channel.queueDeclare(QUEUE, false, false, false, null);
+        String QUEUE = System.getenv("QUEUE_NAME_TEMPERATURA");
+        channel.queueDeclare(QUEUE, true, false, false, null);
         System.out.println("Esperando mensajes en la cola " + QUEUE);
 
         // PROCESAMIENTO DE LOS MENSAJES
@@ -160,8 +147,7 @@ public class WebApp {
                 Integer temperatura = Integer.parseInt(temperaturaPart.split(" ")[1].replace("°C", ""));
 
                 TemperaturaDTO temperaturaDTO = new TemperaturaDTO(temperatura, heladeraId, LocalDateTime.now());
-
-                System.out.println("Processed TemperaturaDTO: " + temperaturaDTO);
+                System.out.println("TEMPERATURA_QUEUE - > Procesando TemperaturaDTO: " + temperaturaDTO);
                 heladeraController.registrarTemperatura(temperaturaDTO);
             } else {
                 System.err.println("Formato de mensaje incorrecto: " + message);
@@ -172,8 +158,8 @@ public class WebApp {
     }
 
     private static void setupConsumerMovimiento() throws IOException {
-        Dotenv dotenv = Dotenv.load();
-        String QUEUE = dotenv.get("QUEUE_NAME_MOVIMIENTO");
+
+        String QUEUE = System.getenv("QUEUE_NAME_MOVIMIENTO");
         channel.queueDeclare(QUEUE, false, false, false, null);
         System.out.println("Esperando mensajes en la cola " + QUEUE);
 
@@ -202,10 +188,11 @@ public class WebApp {
 
     private static void cronRevisadorUltimaTemperaturaSeteadaEnHeladeras() {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-
         // Tarea a ejecutar
         Runnable tarea = () -> {
+            System.out.println("\n----------------------------- Iniciando Control de Temperaturas  -----------------------------\n");
             incidenteService.controlarTiempoDeEsperaMaximoTemperaturas();
+            System.out.println("-----------------------------  -----------------------------\n");
         };
         scheduler.scheduleAtFixedRate(tarea, 0, tiempoRevisarUltimaTemperaturaSeteada, TimeUnit.SECONDS);
     }
@@ -226,33 +213,12 @@ public class WebApp {
         Runnable tarea = () -> {
             fachada.limpiarRetirosDelDia();
         };
-
         // Programar la tarea para que se ejecute a la hora calculada y luego cada 24 horas
         scheduler.scheduleAtFixedRate(tarea, tiempoHastaProximaEjecucion, 24, TimeUnit.HOURS);
     }
 
-    //TODO BORRAR ESTA PARTE ES SOLO DE PRUEBA EN TIEMPO DE EJECUCION
-    private static void cronTemperaturaReporteContinuo(HeladeraController heladeraController){
-        ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-        // Tarea a ejecutar
-        Runnable tarea = () -> {
-            try {
-                List<Heladera> heladeras = heladeraController.obtenerTodasLasHeladeras();
-                for (Heladera heladera : heladeras) {
-                    if(!heladerasExcluidasDeSeteoTemperatura.contains(heladera.getHeladeraId())) {
-                        TemperaturaDTO temperaturaDTO = new TemperaturaDTO(utils.randomNumberBetween(0,15), heladera.getHeladeraId(), LocalDateTime.now());
-                        heladeraController.registrarTemperatura(temperaturaDTO);
-                    }
-                    else {
-                        System.out.println("Heladera " + heladera.getHeladeraId() + " excluida del registro de temperatura.");
-                    }
-                }
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new RuntimeException("Error con las temperaturas: " + e.getMessage());
-            }
-        };
-        scheduler.scheduleAtFixedRate(tarea, 0, tiempoSeteoNuevasTemperaturas, TimeUnit.SECONDS);
+    private static void adviceSensor(Fachada fachada) {
+        List<Heladera> heladeras = fachada.obtenerTodasLasHeladeras();
+        for(Heladera heladera : heladeras) utilsHeladera.avisoSensorCreacionHeladera(heladera.getHeladeraId());
     }
 }

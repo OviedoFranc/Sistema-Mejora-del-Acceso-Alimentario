@@ -38,9 +38,7 @@ public class ColaboradorController {
         UtilsMetrics.actualizarColaboradores(true, false);
       }
       else UtilsMetrics.actualizarColaboradores(true, DONADOR.equals(colaboradorDTORta.getFormas().get(0)));
-        //FUNCIONA?????*/
       context.json(colaboradorDTORta);
-      // context.result("Colaborador agregado");
     } catch (NoSuchElementException e) {
       context.result(e.getLocalizedMessage());
       context.status(HttpStatus.BAD_REQUEST);
@@ -76,7 +74,6 @@ public class ColaboradorController {
   public void modificarColaboracion(Context context) {
     try {
       Long id = context.pathParamAsClass("id", Long.class).get();
-
       List<FormasDeColaborarEnum> formasDeColaborar = context.bodyAsClass(FormasDTO.class).getFormas();
       List<FormasDeColaborarEnum> formasDeColaborarViejo = this.fachada.modificar(id, formasDeColaborar);//CUIDADO SI LE AGREGAMOS FUNCONABILIDAD A FORMADECOLABORARENUM
       compararFormas(formasDeColaborarViejo,formasDeColaborar);
@@ -100,9 +97,6 @@ public class ColaboradorController {
     }
   }
 
-
-
-
   public void reportarHeladera(Context context) {
     Integer heladeraId = context.pathParamAsClass("heladeraId", Integer.class).get();
     try {
@@ -113,6 +107,7 @@ public class ColaboradorController {
       context.status(HttpStatus.NOT_FOUND);
     }
   }
+
   public void repararHeladera(Context context) {
     Integer heladeraId = context.pathParamAsClass("heladeraId", Integer.class).get();
     Long id = context.pathParamAsClass("id", Long.class).get();
@@ -168,13 +163,12 @@ public class ColaboradorController {
 
     try {
       PesosPuntos pesosPuntos = context.bodyAsClass(PesosPuntos.class);
-      //pesosPuntos.
       this.fachada.actualizarPesosPuntos(pesosPuntos.getPesosDonados(),pesosPuntos.getViandas_Distribuidas(),pesosPuntos.getViandasDonadas(),pesosPuntos.getTarjetasRepartidas(),pesosPuntos.getHeladerasActivas(),pesosPuntos.getHeladerasReparadas());
       context.status(HttpStatus.CREATED);
       context.result("Puntos actualizados");
     } catch (ErrorConParametrosException ex) {
       context.result(ex.getLocalizedMessage());
-      context.status(HttpStatus.CONFLICT);    //ESTA BIEN ESTO?
+      context.status(HttpStatus.CONFLICT);
     }
   }
 

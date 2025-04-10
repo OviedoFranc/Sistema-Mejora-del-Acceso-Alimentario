@@ -11,7 +11,6 @@ import java.util.List;
 @Setter
 @Table(name = "rutas")
 public class Ruta {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

@@ -5,25 +5,16 @@
     http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
              version="2.0">
 
-    <persistence-unit name="heladeradb" transaction-type="RESOURCE_LOCAL">
+    <persistence-unit name="db" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
         <!-- PERSISTENCIA -->
         <class>ar.edu.utn.dds.k3003.model.Heladera</class>
         <class>ar.edu.utn.dds.k3003.model.SensorTemperatura</class>
         <class>ar.edu.utn.dds.k3003.model.Temperatura</class>
-
+        <class>ar.edu.utn.dds.k3003.model.Incidente</class>
+        <class>ar.edu.utn.dds.k3003.model.DTO.RetiroDTODay</class>
         <properties>
-            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
-            <property name="hibernate.hbm2ddl.auto" value="update"/>
-            <property name="hibernate.connection.pool_size" value="5" />
-            <property name="hibernate.connection.release_mode" value="after_statement"/>
-            <property name="hibernate.archive.autodetection" value="class" />
-            <property name="hibernate.show_sql" value="false" />
-            <property name="hibernate.format_sql" value="true" />
-            <property name="use_sql_comments" value="true" />
-            <property name="hibernate.connection.url" value="jdbc:postgresql://pg-3b2-frba-95ae.i.aivencloud.com:17556/defaultdb"/>
-
         </properties>
 
     </persistence-unit>

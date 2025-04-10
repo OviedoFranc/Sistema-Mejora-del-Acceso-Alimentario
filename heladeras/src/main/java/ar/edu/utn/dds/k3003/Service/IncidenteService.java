@@ -110,7 +110,7 @@ public class IncidenteService {
     try {
       List<Heladera> heladeras = fachadaHeladera.obtenerTodasLasHeladeras();
       for (Heladera heladera : heladeras) {
-        if (heladera.estaActiva() != false) {
+        if (heladera.estaActiva()) {
         System.out.println("\n Revisando heladera ID: " + heladera.getHeladeraId());
         System.out.println("Último tiempo " + heladera.getTiempoUltimaTemperaturaRecibida());
 

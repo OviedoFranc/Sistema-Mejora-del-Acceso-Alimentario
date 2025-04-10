@@ -19,7 +19,7 @@ public class HeladeraProxy implements FachadaHeladera {
 
     public HeladeraProxy(ObjectMapper objectMapper) {
         var env = System.getenv();
-        this.endpoint = env.getOrDefault("URL_HELADERAS", "https://heladeras-tlcz.onrender.com"); //CUIDADO
+        this.endpoint = env.get("URL_HELADERA");
 
         var retrofit =
                 new Retrofit.Builder()

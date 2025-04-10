@@ -6,9 +6,7 @@ import ar.edu.utn.dds.k3003.facades.FachadaViandas;
 import ar.edu.utn.dds.k3003.facades.dtos.EstadoViandaEnum;
 import ar.edu.utn.dds.k3003.facades.dtos.TemperaturaDTO;
 import ar.edu.utn.dds.k3003.facades.dtos.ViandaDTO;
-import ar.edu.utn.dds.k3003.model.Metrica;
 import ar.edu.utn.dds.k3003.model.Vianda;
-import ar.edu.utn.dds.k3003.repositories.MetricaRepository;
 import ar.edu.utn.dds.k3003.repositories.ViandaMapper;
 import ar.edu.utn.dds.k3003.repositories.ViandaRepository;
 import ar.edu.utn.dds.k3003.service.UtilsMetrics;
@@ -17,18 +15,14 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
 
 public class Fachada implements FachadaViandas {
 	private final ViandaMapper viandaMapper;
 	  private final ViandaRepository viandaRepository;
 	  private FachadaHeladeras fachadaHeladeras;
-	  private EntityManagerFactory entityManagerFactory;
-	  private EntityManager entityManager;
 
-	  public Fachada() {
-	    this.entityManagerFactory = Persistence.createEntityManagerFactory("viandas");
-	    this.entityManager = entityManagerFactory.createEntityManager();
+    public Fachada(EntityManagerFactory entityManagerFactory) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
 	    this.viandaMapper = new ViandaMapper();
 	    this.viandaRepository = new ViandaRepository(entityManager);
 	  }

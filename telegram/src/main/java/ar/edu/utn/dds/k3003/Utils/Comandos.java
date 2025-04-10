@@ -1,11 +1,9 @@
 package ar.edu.utn.dds.k3003.Utils;
-import io.github.cdimascio.dotenv.Dotenv;
+
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
-
-import ar.edu.utn.dds.k3003.app.BotApp.ChatIdRegistry;
-
+import ar.edu.utn.dds.k3003.app.WebApp.ChatIdRegistry;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,6 +12,7 @@ public class Comandos extends TelegramLongPollingBot {
     private BotHeladera botHeladera;
     private BotVianda botViandas;
     private BotColaborador botColaborador;
+    private BotSensor botSensor;
     private Map<Long, String> esperandoUsuarios = new HashMap<>();
     private int idColaboradorActual;
 
@@ -22,6 +21,7 @@ public class Comandos extends TelegramLongPollingBot {
         this.botHeladera = new BotHeladera();
         this.botViandas = new BotVianda();
         this.botColaborador = new BotColaborador();
+        this.botSensor = new BotSensor();
     }
 
     public void handleCommand(Long chatId, String command) {
@@ -36,52 +36,52 @@ public class Comandos extends TelegramLongPollingBot {
             case "/darDeAltaRuta":
                 esperandoUsuarios.put(chatId, "darDeAltaRuta");
                 sendMessage(chatId, "Por favor, envía los datos en el siguiente formato:\n" +
-                        "`colaboradorId heladeraOrigenId heladeraDestinoId`\n" +
-                        "Ejemplo: `5 1 2`");
+                        "colaboradorId heladeraOrigenId heladeraDestinoId\n" +
+                        "Ejemplo: 5 1 2");
                 break;
             case "/asignarTraslado":
                 esperandoUsuarios.put(chatId, "asignarTraslado");
                 sendMessage(chatId, "Por favor, envía los datos en el siguiente formato:\n" +
-                        "`listQrViandas heladeraOrigen heladeraDestino`\n" +
-                        "Ejemplo: `[asd] 1 2`");
+                        "listQrViandas heladeraOrigen heladeraDestino\n" +
+                        "Ejemplo: [asd] 1 2");
                 break;
             case "/iniciarTraslado":
                 esperandoUsuarios.put(chatId, "iniciarFinalizarTraslado");
                 sendMessage(chatId, "Por favor, envía los datos en el siguiente formato:\n" +
-                        "`status idTraslado`\n" +
-                        "Ejemplo: `EN_VIAJE 1`");
+                        "status idTraslado\n" +
+                        "Ejemplo: EN_VIAJE 1");
                 break;
             case "/finalizarTraslado":
                 esperandoUsuarios.put(chatId, "iniciarFinalizarTraslado");
                 sendMessage(chatId, "Por favor, envía los datos en el siguiente formato:\n" +
-                        "`status`\n" +
-                        "Ejemplo: `ENTREGADO 1`");
+                        "status\n" +
+                        "Ejemplo: ENTREGADO 1");
                 break;
 
             case "/agregarColaborador":
                 esperandoUsuarios.put(chatId, "agregarColaborador");
                 sendMessage(chatId, "Por favor, envía los datos en el siguiente formato:\n" +
-                        "`nombre FormaDeColaborar`\n" +
-                        "Ejemplo: `pepito DONADOR`");
+                        "nombre FormaDeColaborar\n" +
+                        "Ejemplo: pepito DONADOR");
                 break;
 
             case  "/modificarFormaDeColaborar":
                 esperandoUsuarios.put(chatId, "modificarFormaDeColaborar"); // FUNCIONA???
                 sendMessage(chatId, "Por favor, envía los datos en el siguiente formato (puede elegir mas de una):\n" +
-                        "`idcolaborador formaDeColaborar`\n" +
-                        "Ejemplo: ` 1 “DONADOR“ “TRANSPORTADOR“ “TECNICO“`");
+                        "idcolaborador formaDeColaborar\n" +
+                        "Ejemplo:  1 “DONADOR“ “TRANSPORTADOR“ “TECNICO“");
                 break;
             case  "/reportarHeladeraRota":
                 esperandoUsuarios.put(chatId, "reportarHeladeraRota");
                 sendMessage(chatId, "Por favor, envía los datos en el siguiente formato :\n" +
-                        "`heladeraID`\n" +
-                        "Ejemplo: `1`");
+                        "heladeraID\n" +
+                        "Ejemplo: 1");
                 break;
             case   "/repararHeladera":
                 esperandoUsuarios.put(chatId, "repararHeladera");
                 sendMessage(chatId, "Por favor, envía los datos en el siguiente formato:\n" +
-                        "`heladeraID`\n" +
-                        "Ejemplo: `1`");
+                        "heladeraID\n" +
+                        "Ejemplo: 1");
                 break;
             case   "/verMisDatos":
                 botColaborador.verMisDatos(chatId, this);
@@ -89,44 +89,54 @@ public class Comandos extends TelegramLongPollingBot {
             case   "/crearYDepositarVianda":
                 esperandoUsuarios.put(chatId, "crearYDepositarVianda");
                 sendMessage(chatId, "Por favor, envía los datos en el siguiente formato:\n" +
-                        "`codigoQR` `fechaElaboracion` `idColaborador` `heladeraId`\n" +
-                        "Ejemplo: `abc` `2024-05-09T10:30:00Z` `1` `2`");
+                        "codigoQR fechaElaboracion idColaborador heladeraId\n" +
+                        "Ejemplo: abc 2024-05-09T10:30:00Z 1 2");
                 break;
             case   "/retirarVianda":
                 esperandoUsuarios.put(chatId, "retirarVianda");
                 sendMessage(chatId, "Por favor, envía los datos en el siguiente formato:\n" +
-                        "`codigoQR` `heladeraId`\n" +
-                        "Ejemplo: `abc` `2`");
+                        "codigoQR heladeraId\n" +
+                        "Ejemplo: abc 2");
                 break;
             case   "/verIncidentesDeHeladera":
                 esperandoUsuarios.put(chatId, "verIncidentesDeHeladera");
                 sendMessage(chatId, "Por favor, envía los datos en el siguiente formato:\n" +
-                        "`heladeraId`\n" +
-                        "Ejemplo: `2`");
+                        "heladeraId\n" +
+                        "Ejemplo: 2");
                 break;
             case   "/verOcupacion":
                 esperandoUsuarios.put(chatId, "verOcupacion");
                 sendMessage(chatId, "Por favor, envía los datos en el siguiente formato:\n" +
-                        "`heladeraId`\n" +
-                        "Ejemplo: `2`");
+                        "heladeraId\n" +
+                        "Ejemplo: 2");
                 break;
             case   "/verRetirosDelDia":
                 esperandoUsuarios.put(chatId, "verRetirosDelDia");
                 sendMessage(chatId, "Por favor, envía los datos en el siguiente formato:\n" +
-                        "`heladeraId`\n" +
-                        "Ejemplo: `2`");
+                        "heladeraId\n" +
+                        "Ejemplo: 2");
                 break;
             case   "/eliminarSuscripcion":
                 esperandoUsuarios.put(chatId, "eliminarSuscripcion");
                 sendMessage(chatId, "Por favor, envía los datos en el siguiente formato:\n" +
-                        "`tipoDeSuscripcion` `heladeraId` `colaboradorId`\n" +
-                        "Ejemplo: `“ViandasDisponibles“ “FaltanteViandas“ “HeladeraDesperfecto“` `2` `1`");
+                        "tipoDeSuscripcion heladeraId colaboradorId\n" +
+                        "Ejemplo: “ViandasDisponibles“ “FaltanteViandas“ “HeladeraDesperfecto“ 2 1");
                 break;
             case   "/suscribirse":
                 esperandoUsuarios.put(chatId, "suscribirse");
                 sendMessage(chatId, "Por favor, envía los datos en el siguiente formato:\n" +
-                        "`colaboradorId` `heladeraId` `tipoDeSuscripcion` `cantidadN`\n" +
-                        "Ejemplo: `1` `2` `“ViandasDisponibles“ `2`");
+                        "colaboradorId heladeraId tipoDeSuscripcion cantidadN\n" +
+                        "Ejemplo: 1 2 “ViandasDisponibles“ 2");
+                break;
+            case "/pararSensor":
+                esperandoUsuarios.put(chatId, "pararSensor");
+                sendMessage(chatId, "Por favor, envía los datos en el siguiente formato: heladeraId\n" +
+                        "Ejemplo: 1");
+                break;
+            case "/reanudarSensor":
+                esperandoUsuarios.put(chatId, "reanudarSensor");
+                sendMessage(chatId, "Por favor, envía los datos en el siguiente formato: heladeraId\n" +
+                        "Ejemplo: 1");
                 break;
             default:
                 sendMessage(chatId, "Comando no reconocido.");
@@ -166,10 +176,9 @@ public class Comandos extends TelegramLongPollingBot {
                 "/verIncidentesDeHeladera - Devuelve el historial de incidentes de una heladera\n" +
                 "/verOcupacion - Devuelve una lista de las viandas dentro de la heladera\n" + 
                 "/verRetirosDelDia - Devuelve una lista de las viandas retiradas\n" +
-                "/eliminarSuscripcion - Elimina la suscripcion de una heladera\n";
-
-        //aca poner todos los comandos
-
+                "/eliminarSuscripcion - Elimina la suscripcion de una heladera\n" +
+                "/pararSensor - Para el sensor de una heladera, esto genera error y es para probar la cola de mensajes\n"+
+                "/reanudarSensor - Reanuda el sensor de una heladera, es para probar la cola de mensajes\n";
         sendMessage(chatId, menuText);
     }
     
@@ -229,7 +238,10 @@ public class Comandos extends TelegramLongPollingBot {
             case "eliminarSuscripcion":
             	botHeladera.eliminarSuscripcion(chatId, message, this);
                 break;
-            
+            case "pararSensor":
+                botSensor.pararSensor(chatId, message, this);
+            case "reanudarSensor":
+                botSensor.reanudarSensor(chatId, message, this);
         }
     }
     
@@ -239,17 +251,16 @@ public class Comandos extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-
     }
 
     @Override
     public String getBotUsername() {
-        return Dotenv.load().get("Nombre_Bot");
+        return System.getenv().get("Nombre_Bot");
     }
 
     @Override
     public String getBotToken() {
-        return Dotenv.load().get("BOT_TOKEN");
+        return System.getenv().get("BOT_TOKEN");
     }
 }
 

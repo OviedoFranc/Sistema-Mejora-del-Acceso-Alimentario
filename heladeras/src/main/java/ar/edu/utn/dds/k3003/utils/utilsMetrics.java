@@ -1,6 +1,5 @@
 package ar.edu.utn.dds.k3003.utils;
 
-import io.github.cdimascio.dotenv.Dotenv;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -8,8 +7,7 @@ import java.net.http.HttpResponse;
 
 public class utilsMetrics {
   public static void enviarNuevaAperuraDeHeladera() {
-    Dotenv dotenv = Dotenv.load();
-    var url = dotenv.get("URL_METRICS");
+    var url = System.getenv("URL_METRICS");
     url = url +"/aperturaHeladera";
     HttpClient client = HttpClient.newHttpClient();
 
@@ -30,8 +28,7 @@ public class utilsMetrics {
   }
 
   public static void metricaIncidenteHeladera(Boolean activo) {
-    Dotenv dotenv = Dotenv.load();
-    var url = dotenv.get("URL_METRICS");
+    var url = System.getenv("URL_METRICS");
     url = url +"/incidentes";
     HttpClient client = HttpClient.newHttpClient();
       if (activo) {
@@ -56,8 +53,7 @@ public class utilsMetrics {
   }
 
   public static void fallaHeladeras() {
-    Dotenv dotenv = Dotenv.load();
-    var url = dotenv.get("URL_METRICS");
+    var url = System.getenv("URL_METRICS");
     url = url +"/fallaHeladeras";
     HttpClient client = HttpClient.newHttpClient();
 

@@ -8,28 +8,35 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.javalin.Javalin;
+import io.javalin.http.Context;
+import io.javalin.http.HttpStatus;
 import io.javalin.json.JavalinJackson;
 
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.TimeZone;
 
 public class WebApp {
+
+  public static EntityManagerFactory entityManagerFactory;
 
   public static void main(String[] args) {
 
     var env = System.getenv();
     var objectMapper = createObjectMapper();
-    var fachada = new Fachada();
+    startEntityManagerFactory();
+    var fachada = new Fachada(entityManagerFactory);
     fachada.setHeladerasProxy(new HeladerasProxy(objectMapper));
-    var port = Integer.parseInt(env.getOrDefault("PORT", "8080"));
+    var port = Integer.parseInt(env.get("PORTVIANDA"));
     var viandasController = new ViandaController(fachada);
     var app = Javalin.create(config -> {
         config.jsonMapper(new JavalinJackson().updateMapper(WebApp::configureObjectMapper));
     }).start(port);
 
-    //Error de Servidor: Could not find /.env on the classpath
-    
     app.post("/viandas", viandasController::agregar);
     app.post("/viandasDepositar", viandasController::agregarYDepositar);
     app.post("/viandasGenericas", viandasController::agregarGenericas);
@@ -56,5 +63,21 @@ public class WebApp {
     var sdf = new SimpleDateFormat(Constants.DEFAULT_SERIALIZATION_FORMAT, Locale.getDefault());
     sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
     objectMapper.setDateFormat(sdf);
+  }
+
+  public static void startEntityManagerFactory() {
+    Map<String, Object> configOverrides = new HashMap<>();
+    configOverrides.put("javax.persistence.jdbc.url", System.getenv("jdbcUrl"));
+    configOverrides.put("javax.persistence.jdbc.user", System.getenv("jdbcUser"));
+    configOverrides.put("javax.persistence.jdbc.password", System.getenv("jdbcPassword"));
+    configOverrides.put("javax.persistence.jdbc.driver", System.getenv("jdbcDriver"));
+    configOverrides.put("hibernate.hbm2ddl.auto", System.getenv("hibernateDDL"));
+    configOverrides.put("hibernate.connection.pool_size", System.getenv("hibernatePoolSize"));
+    configOverrides.put("hibernate.dialect", System.getenv("hibernateDialect"));
+    configOverrides.put("hibernate.connection.release_mode", System.getenv("hibernateConnectionMode"));
+    configOverrides.put("hibernate.archive.autodetection", System.getenv("hibernateArchiveDetection"));
+    configOverrides.put("hibernate.default_schema", System.getenv("hibernateSchema"));
+    configOverrides.put("hibernate.format_sql", System.getenv("hibernateFormatSql"));
+    entityManagerFactory = Persistence.createEntityManagerFactory("db", configOverrides);
   }
 }

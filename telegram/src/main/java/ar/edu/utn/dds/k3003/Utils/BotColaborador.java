@@ -1,27 +1,17 @@
 package ar.edu.utn.dds.k3003.Utils;
 
-import ar.edu.utn.dds.k3003.app.BotApp;
 import ar.edu.utn.dds.k3003.model.DatosColaboradorDTO;
-import io.github.cdimascio.dotenv.Dotenv;
 import org.json.JSONObject;
-import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.api.objects.Update;
-
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Collection;
-import java.util.List;
 
 public class BotColaborador {
 
-    Dotenv dotenv = Dotenv.load();
-    String url = /*"https://colaboradores-prueba.onrender.com"*/ dotenv.get("URL_COLABORADOR");
+    String url = System.getenv("URL_COLABORADOR");
     
     public void agregarColaborador(Long chatId, String mensaje, Comandos comandos) {
         String[] partes = mensaje.split("\\s+");

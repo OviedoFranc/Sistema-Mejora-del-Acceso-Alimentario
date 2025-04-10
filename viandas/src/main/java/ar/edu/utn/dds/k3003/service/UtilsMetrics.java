@@ -1,7 +1,4 @@
 package ar.edu.utn.dds.k3003.service;
-
-import io.github.cdimascio.dotenv.Dotenv;
-
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -10,10 +7,8 @@ import java.net.http.HttpResponse;
 public class UtilsMetrics {
     public static void actualizarViandasCreadas() {
     	var env = System.getenv();
-        var url = env.get("URL_METRICS_1");
+        var url = env.get("URL_METRICS" + "/viandasCreadas"+"/incrementar");
 
-        url = url + "/incrementar";
-        
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).GET().build();
 
@@ -30,7 +25,7 @@ public class UtilsMetrics {
     
     public static void actualizarViandasEnTransporte(boolean aumentar) {
     	var env = System.getenv();
-        var url = env.get("URL_METRICS_2");
+        var url = env.get("URL_METRICS" + "/viandasEnTransporte");
 
         if (aumentar) {
             url = url + "/incrementar";
@@ -54,9 +49,7 @@ public class UtilsMetrics {
     
     public static void actualizarViandasVencidas() {
     	var env = System.getenv();
-        var url = env.get("URL_METRICS_3");
-
-        url = url + "/incrementar";
+        var url = env.get("URL_METRICS" + "/viandasVencidas" + "/incrementar");
         
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).GET().build();

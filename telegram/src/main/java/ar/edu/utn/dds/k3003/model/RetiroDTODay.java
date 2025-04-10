@@ -11,8 +11,6 @@ public class RetiroDTODay {
     private String fechaRetiro;
     private Integer heladeraId;
 
-
-
     // Constructor
     @JsonCreator
     public RetiroDTODay(@JsonProperty("id") Integer id, @JsonProperty("qrVianda") String qrVianda, @JsonProperty("tarjeta") String tarjeta, @JsonProperty("fechaRetiro") String fechaRetiro, @JsonProperty("heladeraId") Integer heladeraId) {

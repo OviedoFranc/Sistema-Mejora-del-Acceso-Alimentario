@@ -1,7 +1,5 @@
 package ar.edu.utn.dds.k3003.Service;
 
-import io.github.cdimascio.dotenv.Dotenv;
-
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -9,8 +7,7 @@ import java.net.http.HttpResponse;
 
 public class UtilsMetrics {
     public static void enviarNuevoTrasladoRealizado() {
-        Dotenv dotenv = Dotenv.load();
-        var url = dotenv.get("URL_METRICS_1");
+        var url = System.getenv("URL_METRICS" + "/viandasCreadas");
 
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url)).GET().build();
@@ -27,8 +24,7 @@ public class UtilsMetrics {
     }
 
     public static void actualizarTrasladosEnCurso(Long trasladoId, boolean aumentar) {
-        Dotenv dotenv = Dotenv.load();
-        var url = dotenv.get("URL_METRICS_2");
+        var url = System.getenv("URL_METRICS" + "/viandasEnTransporte");
 
         if (aumentar) {
             url = url + "/incrementar";
