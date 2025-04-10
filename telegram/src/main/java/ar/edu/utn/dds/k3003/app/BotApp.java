@@ -6,6 +6,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.javalin.Javalin;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -18,7 +19,9 @@ public class BotApp extends TelegramLongPollingBot  {
     private Comandos commandsHandler;
 
     public static void main(String[] args) throws Exception {
-        Dotenv dotenv = Dotenv.load();
+        var app = Javalin.create()
+            .get("/", ctx -> ctx.result("running"))
+            .start(8080);
 
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
 
